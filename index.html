@@ -1,37 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>학습 관리 웹사이트</title>
-
-  <!-- GitHub Pages 경로 고정 -->
-  <base href="/-8-/">
-
-  <link rel="stylesheet" href="/-8-/common.css">
-  <link rel="stylesheet" href="/-8-/layout.css">
-
+<meta charset="UTF-8">
+<title>학습 관리 웹사이트</title>
+<style>
+body { font-family: Segoe UI, sans-serif; background:#f5f7fb; padding:20px }
+.menu a { margin-right:15px; font-weight:600; color:#4a5bdc; text-decoration:none }
+.post { background:white; padding:15px; border-radius:8px; margin-top:15px }
+</style>
 </head>
-
 <body>
 
-<h1>🎓 학습 관리 웹사이트 </h1>
+<h1>🎓 학습 관리 웹사이트</h1>
 
 <nav class="menu">
-  <a href="./todo_list.html"> 투두리스트</a>
-  <a href="./study_check.html">자습 체크리스트</a>
-  <a href="./work_alert.html"> 과제 알림</a>
-  <a href="./event_alert.html"> 학교 행사</a>
+  <a href="todo_list.html">투두리스트</a>
+  <a href="study_check.html">자습 체크</a>
+  <a href="work_alert.html">과제 알림</a>
+  <a href="event_alert.html">학교 행사</a>
 </nav>
 
-<section>
-  <h2>반별 게시판</h2>
-  <div class="post">
-    <h3> 예시: 전체자평같은거쓰새여 ㅎㅎ </h3>
-    <p>마감: 2025-12-25</p>
-    <label>
-      <input type="checkbox" data-id="math1">
-      이건 뭐넣어야하는곳이냐
-    </label>
-  </div>
-</section>
+  <script>
+const title = document.getElementById('post-title');
+const deadline = document.getElementById('deadline');
+const submit = document.getElementById('submit');
+
+title.innerText = localStorage.postTitle || title.innerText;
+deadline.value = localStorage.deadline || "";
+submit.checked = localStorage.submit === "true";
+
+title.oninput = () => localStorage.postTitle = title.innerText;
+deadline.onchange = () => localStorage.deadline = deadline.value;
+submit.onchange = () => localStorage.submit = submit.checked;
+</script>
 
 </body>
 </html>
