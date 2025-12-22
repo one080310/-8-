@@ -10,7 +10,7 @@ body {
   padding:20px;
 }
 
-h2 { margin-bottom:5px; }
+h2 { margin-bottom:6px; }
 
 a {
   text-decoration:none;
@@ -33,26 +33,39 @@ a {
   color:white;
 }
 
-table {
-  width:100%;
-  border-collapse:collapse;
+.student {
   background:white;
-  margin-top:15px;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.06);
 }
 
-th, td {
-  border:1px solid #ccc;
-  padding:6px;
-  text-align:center;
-  font-size:14px;
+.student h3 {
+  margin:0 0 6px 0;
 }
 
-th {
-  background:#eef1ff;
+.task {
+  display:flex;
+  align-items:center;
+  margin:4px 0;
 }
 
-input[type="text"] {
-  width:90%;
+.task input[type="text"] {
+  flex:1;
+  padding:4px;
+}
+
+.task input[type="checkbox"] {
+  margin-left:8px;
+}
+
+.add-task {
+  margin-top:6px;
+}
+
+.add-task input {
+  width:70%;
   padding:4px;
 }
 </style>
@@ -65,21 +78,12 @@ input[type="text"] {
 <!-- 반 선택 -->
 <div class="class-buttons" id="classButtons"></div>
 
-<!-- 투두 테이블 -->
-<table>
-  <thead>
-    <tr>
-      <th>번호</th>
-      <th>할 일</th>
-      <th>완료</th>
-    </tr>
-  </thead>
-  <tbody id="tableBody"></tbody>
-</table>
+<!-- 학생 영역 -->
+<div id="studentArea"></div>
 
 <script>
 let currentClass = "1반";
-const tableBody = document.getElementById("tableBody");
+const studentArea = document.getElementById("studentArea");
 const classButtons = document.getElementById("classButtons");
 
 /* 반 버튼 */
@@ -107,8 +111,7 @@ function getData(){
     for(let i=1;i<=24;i++){
       data.push({
         number:i,
-        task:"",
-        done:false
+        tasks:[]
       });
     }
     saveData(data);
@@ -120,42 +123,56 @@ function saveData(data){
   localStorage.setItem("todo_"+currentClass, JSON.stringify(data));
 }
 
-/* 할 일 입력 */
-function updateTask(index, value){
+/* 할 일 추가 */
+function addTask(studentIndex, input){
+  if(!input.value) return;
+
   const data=getData();
-  data[index].task=value;
+  data[studentIndex].tasks.push({
+    text: input.value,
+    done:false
+  });
   saveData(data);
+  render();
 }
 
 /* 체크 */
-function toggleDone(index){
+function toggleDone(sIndex, tIndex){
   const data=getData();
-  data[index].done=!data[index].done;
+  data[sIndex].tasks[tIndex].done =
+    !data[sIndex].tasks[tIndex].done;
   saveData(data);
 }
 
 /* 렌더 */
 function render(){
   const data=getData();
-  tableBody.innerHTML="";
+  studentArea.innerHTML="";
 
-  data.forEach((s, i)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td>${s.number}</td>
-      <td>
-        <input type="text"
-          value="${s.task}"
-          placeholder="할 일 입력"
-          oninput="updateTask(${i}, this.value)">
-      </td>
-      <td>
-        <input type="checkbox"
-          ${s.done?"checked":""}
-          onclick="toggleDone(${i})">
-      </td>
+  data.forEach((student, sIndex)=>{
+    const div=document.createElement("div");
+    div.className="student";
+    div.innerHTML=`<h3>${student.number}번</h3>`;
+
+    student.tasks.forEach((task,tIndex)=>{
+      div.innerHTML+=`
+        <div class="task">
+          <input type="text" value="${task.text}" readonly>
+          <input type="checkbox"
+            ${task.done?"checked":""}
+            onclick="toggleDone(${sIndex},${tIndex})">
+        </div>`;
+    });
+
+    div.innerHTML+=`
+      <div class="add-task">
+        <input placeholder="할 일 추가"
+          onkeydown="if(event.key==='Enter') addTask(${sIndex}, this)">
+        <button onclick="addTask(${sIndex}, this.previousElementSibling)">추가</button>
+      </div>
     `;
-    tableBody.appendChild(tr);
+
+    studentArea.appendChild(div);
   });
 }
 
