@@ -2,173 +2,106 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>과제 알림</title>
+<title>과제 공지</title>
+<link rel="stylesheet" href="./common.css">
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background:#f5f7fb;
-  padding:20px;
-}
-
-h2 { margin-bottom:5px; }
-
-a {
-  text-decoration:none;
-  color:#4a5bdc;
-  font-weight:600;
-}
-
-.class-buttons button {
-  margin:4px;
-  padding:6px 14px;
-  border:none;
-  border-radius:20px;
-  background:#e0e4ff;
-  cursor:pointer;
-  font-weight:600;
-}
-
-.class-buttons button.active {
-  background:#4a5bdc;
-  color:white;
-}
-
-.add-box {
-  margin:15px 0;
-}
-
-.add-box input {
-  padding:6px;
-  margin-right:6px;
-}
-
 .notice {
   background:white;
-  border-radius:10px;
   padding:15px;
-  margin-bottom:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.06);
+  border-radius:10px;
+  margin-bottom:15px;
 }
 
-.notice h3 {
-  margin:0 0 8px 0;
-}
-
-.notice p {
-  margin:4px 0;
-}
-
-.notice button {
-  margin-top:8px;
-  padding:6px 12px;
+button {
+  padding:6px 14px;
   border:none;
   border-radius:6px;
   background:#4a5bdc;
   color:white;
-  cursor:pointer;
+  font-weight:600;
+}
+
+button:disabled {
+  background:#ccc;
 }
 </style>
 </head>
 <body>
 
-<h2> 과제 알림</h2>
-<a href="index.html">← 홈으로</a>
+<h2>📢 과제 공지</h2>
+<a href="index.html">← 홈</a>
 
-<!-- 반 선택 -->
-<div class="class-buttons" id="classButtons"></div>
-
-<!-- 과제 추가 -->
-<div class="add-box">
-  <input id="titleInput" placeholder="과제 제목">
-  <input id="dateInput" type="date">
-  <input id="contentInput" placeholder="과제 내용">
-  <button onclick="addTask()">공지 추가</button>
-</div>
-
-<!-- 공지 영역 -->
-<div id="noticeArea"></div>
+<div id="workArea"></div>
 
 <script>
-let currentClass = "1반";
-const noticeArea = document.getElementById("noticeArea");
-const classButtons = document.getElementById("classButtons");
+const LOGIN_KEY="login_student";
 
-const titleInput = document.getElementById("titleInput");
-const dateInput = document.getElementById("dateInput");
-const contentInput = document.getElementById("contentInput");
+const works=[
+  {
+    id:"math",
+    title:"수학 수행평가",
+    content:"함수 단원 문제 풀이",
+    deadline:"2025-12-25"
+  },
+  {
+    id:"science",
+    title:"과학 자기평가서",
+    content:"학기 자기평가 작성",
+    deadline:"2025-12-27"
+  }
+];
 
-/* 반 버튼 */
-for(let i=1;i<=7;i++){
-  const btn=document.createElement("button");
-  btn.innerText=i+"반";
-  if(i===1) btn.classList.add("active");
-  btn.onclick=()=>switchClass(i+"반",btn);
-  classButtons.appendChild(btn);
-}
-
-function switchClass(cls, btn){
-  currentClass=cls;
-  document.querySelectorAll(".class-buttons button")
-    .forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  render();
-}
-
-/* 데이터 */
-function getData(){
-  return JSON.parse(localStorage.getItem("task_"+currentClass) || "[]");
-}
-
-function saveData(data){
-  localStorage.setItem("task_"+currentClass, JSON.stringify(data));
-}
-
-/* 과제 추가 */
-function addTask(){
-  if(!titleInput.value || !dateInput.value) return;
-
-  const data=getData();
-  data.unshift({
-    title:titleInput.value,
-    date:dateInput.value,
-    content:contentInput.value,
-    submitted:0
-  });
-
-  saveData(data);
-
-  titleInput.value="";
-  dateInput.value="";
-  contentInput.value="";
-
-  render();
-}
-
-/* 제출 +1 */
-function submitTask(index){
-  const data=getData();
-  data[index].submitted++;
-  saveData(data);
-  render();
-}
-
-/* 렌더 */
 function render(){
-  const data=getData();
-  noticeArea.innerHTML="";
+  const user=localStorage.getItem(LOGIN_KEY);
+  if(!user){
+    alert("로그인 필요");
+    location.href="index.html";
+    return;
+  }
 
-  data.forEach((task,index)=>{
-    const div=document.createElement("div");
-    div.className="notice";
-    div.innerHTML=`
-      <h3>${task.title}</h3>
-      <p> 마감기한: ${task.date}</p>
-      <p> ${task.content || "내용 없음"}</p>
-      <p> 제출 인원: ${task.submitted}명</p>
-      <button onclick="submitTask(${index})">제출 완료</button>
+  const area=document.getElementById("workArea");
+  area.innerHTML="";
+
+  works.forEach(w=>{
+    const key="submit_"+w.id;
+    let list=JSON.parse(localStorage.getItem(key))||[];
+    const today=new Date().toISOString().slice(0,10);
+    const closed=today>w.deadline;
+
+    const submitted=list.includes(user);
+
+    area.innerHTML+=`
+      <div class="notice">
+        <h3>${w.title}</h3>
+        <p>${w.content}</p>
+        <p>마감: ${w.deadline}</p>
+        <p>제출 현황: ${list.length}/24</p>
+
+        <button 
+          onclick="submit('${w.id}')"
+          ${submitted||closed?"disabled":""}>
+          ${closed?"마감됨":submitted?"제출 완료":"제출"}
+        </button>
+
+        <details>
+          <summary>제출자 보기 (선생님)</summary>
+          ${list.map(n=>n+"번").join(", ")||"없음"}
+        </details>
+      </div>
     `;
-    noticeArea.appendChild(div);
   });
+}
+
+function submit(id){
+  const user=localStorage.getItem(LOGIN_KEY);
+  const key="submit_"+id;
+  let list=JSON.parse(localStorage.getItem(key))||[];
+
+  if(!list.includes(user)){
+    list.push(user);
+    localStorage.setItem(key,JSON.stringify(list));
+    render();
+  }
 }
 
 render();
