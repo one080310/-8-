@@ -1,106 +1,210 @@
-<!DOCTYPE html>
-<html lang="ko">
+<!DOCTYPE html> <!-- HTML5 문서 선언 -->
+<html lang="ko"> <!-- 한국어 웹페이지 시작 -->
 <head>
-<meta charset="UTF-8">
-<title>자습 체크리스트</title>
+<meta charset="UTF-8"> <!-- 한글 인코딩 설정 -->
+<title>자습 체크리스트</title> <!-- 브라우저 탭에 보이는 제목 -->
+<style>
+/* === 전체 페이지 스타일 === */
+body {
+  font-family: 'Segoe UI', sans-serif; /* 깔끔한 글꼴 사용 */
+  background: #f5f7fb; /* 연한 파란 회색 배경 */
+  padding: 20px; /* 화면 가장자리 여백 20px */
+}
+
+h2 {
+  color: #333; /* 제목 색상 어두운 회색 */
+  margin-bottom: 10px; /* 제목 아래 여백 10px */
+}
+
+a {
+  text-decoration: none; /* 링크 밑줄 제거 */
+  color: #4a5bdc; /* 링크 색상 파란색 */
+  font-weight: 600; /* 링크 글씨 두껍게 */
+  margin-bottom: 20px; /* 링크 아래 여백 */
+  display: inline-block; /* 여백이 적용되도록 블록으로 표시 */
+}
+
+/* === 반 선택 버튼 스타일 === */
+.class-buttons {
+  margin: 20px 0; /* 위아래 여백 20px */
+}
+
+.class-buttons button {
+  margin: 4px; /* 버튼 간격 4px */
+  padding: 8px 16px; /* 버튼 안쪽 여백 (상하 8px, 좌우 16px) */
+  border: none; /* 버튼 테두리 제거 */
+  border-radius: 20px; /* 버튼 모서리 둥글게 */
+  background: #e0e4ff; /* 연한 파란색 배경 */
+  cursor: pointer; /* 마우스 올리면 손가락 모양 */
+  font-weight: 600; /* 글씨 두껍게 */
+  font-size: 14px; /* 글자 크기 14px */
+  transition: all 0.3s ease; /* 모든 변화를 0.3초 동안 부드럽게 */
+}
+
+.class-buttons button:hover {
+  background: #c5ccff; /* 마우스 올리면 조금 더 진한 파란색 */
+}
+
+.class-buttons button.active {
+  background: #4a5bdc; /* 선택된 버튼은 진한 파란색 */
+  color: white; /* 선택된 버튼 글자는 하얀색 */
+}
+
+/* === 테이블(표) 스타일 === */
+table {
+  width: 100%; /* 테이블 너비 100% */
+  border-collapse: collapse; /* 셀 테두리 합치기 */
+  background: white; /* 테이블 배경 흰색 */
+  border-radius: 10px; /* 테이블 모서리 둥글게 */
+  overflow: hidden; /* 둥근 모서리가 보이도록 넘치는 부분 숨김 */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* 테이블 그림자 효과 */
+}
+
+thead {
+  background: #4a5bdc; /* 테이블 헤더 배경 파란색 */
+  color: white; /* 테이블 헤더 글자 흰색 */
+}
+
+th {
+  padding: 12px 8px; /* 헤더 셀 안쪽 여백 */
+  text-align: center; /* 헤더 텍스트 가운데 정렬 */
+  font-size: 13px; /* 헤더 글자 크기 */
+  border: 1px solid rgba(255,255,255,0.2); /* 헤더 셀 경계선 반투명 흰색 */
+}
+
+td {
+  padding: 10px 8px; /* 일반 셀 안쪽 여백 */
+  text-align: center; /* 셀 내용 가운데 정렬 */
+  border: 1px solid #e0e4ff; /* 셀 경계선 연한 파란색 */
+}
+
+tbody tr:nth-child(even) {
+  background: #f8f9fa; /* 짝수 행은 연한 회색 배경 (줄무늬 효과) */
+}
+
+tbody tr:hover {
+  background: #e8ecff; /* 마우스 올리면 연한 파란색 배경 */
+}
+
+/* === 체크박스 스타일 === */
+input[type="checkbox"] {
+  width: 18px; /* 체크박스 너비 18px */
+  height: 18px; /* 체크박스 높이 18px */
+  cursor: pointer; /* 마우스 올리면 손가락 모양 */
+  accent-color: #4a5bdc; /* 체크박스 체크 색상 파란색 */
+}
+
+/* === 번호 열 강조 스타일 === */
+td:first-child {
+  font-weight: 600; /* 번호 열 글씨 두껍게 */
+  color: #4a5bdc; /* 번호 열 글자 파란색 */
+  background: #f0f2ff; /* 번호 열 배경 연한 파란색 */
+}
+</style>
 </head>
 <body>
 
+<!-- 페이지 제목 -->
 <h2>📘 자습 체크리스트</h2>
+<!-- 홈으로 돌아가는 링크 -->
 <a href="index.html">← 홈으로</a>
 
-<!-- 반 선택 -->
+<!-- 반 선택 버튼들이 들어갈 영역 (자바스크립트로 생성됨) -->
 <div class="class-buttons" id="classButtons"></div>
 
+<!-- 자습 체크 테이블 -->
 <table>
-  <thead>
-    <tr>
-      <th rowspan="2">번호</th>
-      <th colspan="15">자습 체크</th>
+  <thead> <!-- 테이블 헤더 부분 -->
+    <tr> <!-- 첫 번째 헤더 행 -->
+      <th rowspan="2">번호</th> <!-- 번호 열 (2행 합치기) -->
+      <th colspan="15">자습 체크</th> <!-- 자습체크 열 (15열 합치기) -->
     </tr>
-    <tr>
-      <th>월8</th><th>월야1</th><th>월야2</th>
-      <th>화8</th><th>화야1</th><th>화야2</th>
-      <th>수8</th><th>수야1</th><th>수야2</th>
-      <th>목8</th><th>목야1</th><th>목야2</th>
-      <th>금8</th><th>금야1</th><th>금야2</th>
+    <tr> <!-- 두 번째 헤더 행 (요일별 시간대) -->
+      <th>월8</th><th>월야1</th><th>월야2</th> <!-- 월요일 8교시, 야자1, 야자2 -->
+      <th>화8</th><th>화야1</th><th>화야2</th> <!-- 화요일 -->
+      <th>수8</th><th>수야1</th><th>수야2</th> <!-- 수요일 -->
+      <th>목8</th><th>목야1</th><th>목야2</th> <!-- 목요일 -->
+      <th>금8</th><th>금야1</th><th>금야2</th> <!-- 금요일 -->
     </tr>
   </thead>
-  <tbody id="tableBody"></tbody>
+  <tbody id="tableBody"></tbody> <!-- 학생 체크박스가 들어갈 본문 (자바스크립트로 생성) -->
 </table>
 
 <script>
-let currentClass = "1반";
-const tableBody = document.getElementById("tableBody");
-const classButtons = document.getElementById("classButtons");
+/* === 전역 변수 === */
+let currentClass = "1반"; // 현재 선택된 반 (기본값: 1반)
+const tableBody = document.getElementById("tableBody"); // 테이블 본문 요소
+const classButtons = document.getElementById("classButtons"); // 반 버튼 영역 요소
 
-/* 반 버튼 */
-for(let i=1;i<=7;i++){
-  const btn=document.createElement("button");
-  btn.innerText=i+"반";
-  if(i===1) btn.classList.add("active");
-  btn.onclick=()=>switchClass(i+"반",btn);
-  classButtons.appendChild(btn);
+/* === 1~7반 버튼 생성 === */
+for(let i=1; i<=7; i++){ // 1반부터 7반까지 반복
+  const btn=document.createElement("button"); // 버튼 요소 생성
+  btn.innerText=i+"반"; // 버튼 텍스트를 "1반", "2반" 등으로 설정
+  if(i===1) btn.classList.add("active"); // 1반 버튼에만 active 클래스 추가 (선택 상태)
+  btn.onclick=()=>switchClass(i+"반",btn); // 버튼 클릭 시 switchClass 함수 실행
+  classButtons.appendChild(btn); // 버튼을 화면에 추가
 }
 
+/* === 반 전환 함수 === */
 function switchClass(cls, btn){
-  currentClass=cls;
-  document.querySelectorAll(".class-buttons button")
-    .forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  render();
+  currentClass=cls; // 현재 반을 클릭한 반으로 변경
+  document.querySelectorAll(".class-buttons button") // 모든 반 버튼 선택
+    .forEach(b=>b.classList.remove("active")); // 모든 버튼에서 active 클래스 제거
+  btn.classList.add("active"); // 클릭한 버튼에만 active 클래스 추가
+  render(); // 화면 다시 그리기
 }
 
-/* 데이터 */
+/* === 데이터 가져오기 함수 === */
 function getData(){
-  let data = JSON.parse(localStorage.getItem("study_"+currentClass));
-  if(!data){
-    data=[];
-    for(let i=1;i<=24;i++){
+  let data = JSON.parse(localStorage.getItem("study_"+currentClass)); // 로컬스토리지에서 현재 반 데이터 가져오기
+  if(!data){ // 데이터가 없으면 (처음 사용하는 경우)
+    data=[]; // 빈 배열 생성
+    for(let i=1; i<=24; i++){ // 1번부터 24번 학생까지
       data.push({
-        number:i,
-        checks:Array(15).fill(false)
+        number:i, // 학생 번호
+        checks:Array(15).fill(false) // 15개 체크박스 모두 false로 초기화
       });
     }
-    saveData(data);
+    saveData(data); // 초기 데이터를 로컬스토리지에 저장
   }
-  return data;
+  return data; // 데이터 반환
 }
 
+/* === 데이터 저장 함수 === */
 function saveData(data){
-  localStorage.setItem("study_"+currentClass, JSON.stringify(data));
+  localStorage.setItem("study_"+currentClass, JSON.stringify(data)); // 현재 반 데이터를 로컬스토리지에 저장
 }
 
-/* 체크 */
+/* === 체크박스 토글 함수 === */
 function toggleCheck(sIndex, cIndex){
-  const data=getData();
-  data[sIndex].checks[cIndex]=!data[sIndex].checks[cIndex];
-  saveData(data);
+  const data=getData(); // 현재 데이터 가져오기
+  data[sIndex].checks[cIndex]=!data[sIndex].checks[cIndex]; // 해당 체크박스 상태 반전 (true↔false)
+  saveData(data); // 변경된 데이터 저장
 }
 
-/* 렌더 */
+/* === 화면 렌더링 함수 === */
 function render(){
-  const data=getData();
-  tableBody.innerHTML="";
+  const data=getData(); // 현재 데이터 가져오기
+  tableBody.innerHTML=""; // 테이블 본문 비우기 (초기화)
 
-  data.forEach((student, sIndex)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${student.number}</td>`;
+  data.forEach((student, sIndex)=>{ // 각 학생에 대해 반복
+    const tr=document.createElement("tr"); // 새 행(row) 생성
+    tr.innerHTML=`<td>${student.number}</td>`; // 첫 번째 열에 학생 번호 추가
 
-    student.checks.forEach((checked,cIndex)=>{
+    student.checks.forEach((checked,cIndex)=>{ // 각 체크박스에 대해 반복 (15개)
       tr.innerHTML+=`
         <td>
           <input type="checkbox"
-            ${checked?"checked":""}
+            ${checked?"checked":""} 
             onclick="toggleCheck(${sIndex},${cIndex})">
-        </td>`;
+        </td>`; // 체크박스 추가 (체크 상태면 checked 속성, 클릭 시 toggleCheck 함수 실행)
     });
 
-    tableBody.appendChild(tr);
+    tableBody.appendChild(tr); // 완성된 행을 테이블에 추가
   });
 }
 
-render();
+render(); // 페이지 로드 시 첫 렌더링 실행
 </script>
 
 </body>
