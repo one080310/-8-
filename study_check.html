@@ -180,6 +180,7 @@ function toggleCheck(sIndex, cIndex){
   const data=getData(); // 현재 데이터 가져오기
   data[sIndex].checks[cIndex]=!data[sIndex].checks[cIndex]; // 해당 체크박스 상태 반전 (true↔false)
   saveData(data); // 변경된 데이터 저장
+  render(); // 화면 다시 그리기 (체크 상태 즉시 반영)
 }
 
 /* === 화면 렌더링 함수 === */
@@ -189,15 +190,21 @@ function render(){
 
   data.forEach((student, sIndex)=>{ // 각 학생에 대해 반복
     const tr=document.createElement("tr"); // 새 행(row) 생성
-    tr.innerHTML=`<td>${student.number}</td>`; // 첫 번째 열에 학생 번호 추가
+    
+    // 첫 번째 열에 학생 번호 추가
+    const numberCell = document.createElement("td");
+    numberCell.textContent = student.number;
+    tr.appendChild(numberCell);
 
-    student.checks.forEach((checked,cIndex)=>{ // 각 체크박스에 대해 반복 (15개)
-      tr.innerHTML+=`
-        <td>
-          <input type="checkbox"
-            ${checked?"checked":""} 
-            onclick="toggleCheck(${sIndex},${cIndex})">
-        </td>`; // 체크박스 추가 (체크 상태면 checked 속성, 클릭 시 toggleCheck 함수 실행)
+    // 15개 체크박스 생성 (각각 별도 셀로)
+    student.checks.forEach((checked, cIndex)=>{ 
+      const cell = document.createElement("td"); // 새 셀 생성
+      const checkbox = document.createElement("input"); // 체크박스 생성
+      checkbox.type = "checkbox"; // 타입을 체크박스로 설정
+      checkbox.checked = checked; // 저장된 체크 상태 적용
+      checkbox.onclick = ()=>toggleCheck(sIndex, cIndex); // 클릭 시 토글 함수 실행
+      cell.appendChild(checkbox); // 셀에 체크박스 추가
+      tr.appendChild(cell); // 행에 셀 추가
     });
 
     tableBody.appendChild(tr); // 완성된 행을 테이블에 추가
