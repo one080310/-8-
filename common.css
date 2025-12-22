@@ -15,3 +15,10 @@ h1, h2, h3 {
   color: #212529;
 }
 
+.icon {
+  width: 18px;
+  height: 18px;
+  color: #667eea;
+  display: inline-block;
+  vertical-align: middle;
+}
