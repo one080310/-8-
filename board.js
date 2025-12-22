@@ -1,57 +1,29 @@
 let currentClass = 1;
 
-// 반 선택
-function selectClass(classNum) {
-  currentClass = classNum;
+function selectClass(num) {
+  currentClass = num;
 
-  document.querySelectorAll('.class-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
+  document.querySelectorAll('.class-btn')
+    .forEach(b => b.classList.remove('active'));
 
   event.target.classList.add('active');
-
-  loadPosts();
 }
 
-// 게시물 생성
 function createPost() {
-  const type = document.getElementById('postType').value;
-  const title = document.getElementById('postTitle').value;
-  const content = document.getElementById('postContent').value;
-  const deadline = document.getElementById('postDeadline').value;
+  const title = postTitle.value;
+  const content = postContent.value;
 
   if (!title || !content) {
-    alert('제목과 내용을 입력하세요.');
+    alert("입력해");
     return;
   }
 
-  const post = document.createElement('div');
-  post.className = 'post-card';
+  const div = document.createElement('div');
+  div.className = 'post';
+  div.innerHTML = `<h4>${title}</h4><p>${content}</p>`;
 
-  post.innerHTML = `
-    <div class="post-header">
-      <div class="post-title">${title}</div>
-      <span class="post-badge badge-assignment">${type}</span>
-    </div>
-    <div class="post-content">${content}</div>
-    <div class="post-meta">
-      <span>${deadline ? '마감: ' + deadline : ''}</span>
-      <label>
-        <input type="checkbox"> 제출 완료
-      </label>
-    </div>
-  `;
+  postsList.prepend(div);
 
-  document.getElementById('postsList').prepend(post);
-
-  // 초기화
-  document.getElementById('postTitle').value = '';
-  document.getElementById('postContent').value = '';
-  document.getElementById('postDeadline').value = '';
+  postTitle.value = "";
+  postContent.value = "";
 }
-
-// 게시물 불러오기 (데모)
-function loadPosts() {
-  console.log(`${currentClass}반 게시물 로딩`);
-}
-
