@@ -13,25 +13,26 @@ body {
 
 .box {
   background:white;
-  max-width:360px;
+  max-width:380px;
   margin:0 auto;
   padding:30px;
-  border-radius:14px;
+  border-radius:16px;
   box-shadow:0 10px 25px rgba(0,0,0,0.08);
 }
 
 input {
   width:90%;
-  padding:10px;
-  font-size:16px;
-  margin:10px 0;
+  padding:12px;
+  font-size:18px;
+  margin:12px 0;
+  text-align:center;
 }
 
 button {
-  padding:10px 20px;
+  padding:10px 24px;
   font-size:16px;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
   background:#4a5bdc;
   color:white;
   cursor:pointer;
@@ -39,10 +40,15 @@ button {
 
 .menu a {
   display:block;
-  margin:12px 0;
+  margin:14px 0;
   font-weight:600;
   color:#4a5bdc;
   text-decoration:none;
+}
+
+.error {
+  color:red;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -51,10 +57,10 @@ button {
 <!-- 로그인 -->
 <div class="box" id="loginBox">
   <h2>🔐 로그인</h2>
-  <p>학번 (1~24)</p>
-  <input type="number" id="studentNum" min="1" max="24">
+  <p>학번 (예: 20101)</p>
+  <input type="number" id="studentCode" placeholder="학번 5자리">
   <button onclick="login()">로그인</button>
-  <p id="msg" style="color:red;"></p>
+  <div class="error" id="msg"></div>
 </div>
 
 <!-- 메인 -->
@@ -62,7 +68,7 @@ button {
   <h2 id="welcome"></h2>
 
   <div class="menu">
-    <a href="todo_list.html">📝 투두리스트</a>
+    <a href="todo_list.html">📝 반별 투두리스트</a>
     <a href="study_check.html">📘 자습 체크</a>
     <a href="work_alert.html">📢 과제 알림</a>
     <a href="event_alert.html">📅 학교 행사</a>
@@ -72,19 +78,41 @@ button {
 </div>
 
 <script>
-const loginBox=document.getElementById("loginBox");
-const mainBox=document.getElementById("mainBox");
-const welcome=document.getElementById("welcome");
-const msg=document.getElementById("msg");
+const loginBox = document.getElementById("loginBox");
+const mainBox = document.getElementById("mainBox");
+const welcome = document.getElementById("welcome");
+const msg = document.getElementById("msg");
 
 /* 로그인 */
 function login(){
-  const num=document.getElementById("studentNum").value;
-  if(num<1||num>24){
-    msg.innerText="학번은 1~24번만 가능";
+  const code = document.getElementById("studentCode").value;
+
+  if(code.length !== 5){
+    msg.innerText = "학번은 5자리여야 함";
     return;
   }
-  localStorage.setItem("loginStudent",num);
+
+  const grade = code[0];           // 학년
+  const classNum = code.slice(1,3); // 반
+  const number = code.slice(3,5);   // 번호
+
+  if(
+    grade < 1 || grade > 3 ||
+    classNum < 1 || classNum > 7 ||
+    number < 1 || number > 24
+  ){
+    msg.innerText = "학번 형식이 올바르지 않음";
+    return;
+  }
+
+  const student = {
+    code,
+    grade,
+    classNum,
+    number
+  };
+
+  localStorage.setItem("loginStudent", JSON.stringify(student));
   showMain();
 }
 
@@ -94,14 +122,16 @@ function logout(){
   location.reload();
 }
 
-/* 상태 */
+/* 상태 확인 */
 function showMain(){
-  const num=localStorage.getItem("loginStudent");
-  if(num){
-    loginBox.style.display="none";
-    mainBox.style.display="block";
-    welcome.innerText=`${num}번 학생 로그인됨`;
-  }
+  const data = localStorage.getItem("loginStudent");
+  if(!data) return;
+
+  const stu = JSON.parse(data);
+  loginBox.style.display = "none";
+  mainBox.style.display = "block";
+  welcome.innerText =
+    `${stu.grade}학년 ${stu.classNum}반 ${stu.number}번 로그인됨`;
 }
 
 showMain();
