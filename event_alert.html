@@ -1,20 +1,103 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>학교 행사</title>
-  <link rel="stylesheet" href="./common.css">
-  <link rel="stylesheet" href="./layout.css">
+<meta charset="UTF-8">
+<title>학교 행사 캘린더</title>
+<style>
+body { font-family: Segoe UI, sans-serif; background:#f5f7fb; padding:20px }
+h2 { margin-bottom:10px }
+a { text-decoration:none; color:#4a5bdc; font-weight:600 }
+
+.calendar {
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap:5px;
+  margin-top:20px;
+}
+.day, .head {
+  background:white;
+  padding:10px;
+  border-radius:6px;
+  min-height:80px;
+  font-size:14px;
+}
+.head { background:#e9ecff; font-weight:700; text-align:center }
+.day-number { font-weight:700 }
+.event {
+  background:#4a5bdc;
+  color:white;
+  padding:3px 6px;
+  border-radius:4px;
+  margin-top:5px;
+  font-size:12px;
+}
+input, button {
+  padding:8px;
+  margin-right:5px;
+}
+</style>
 </head>
 <body>
 
-<h2> 학교 행사</h2>
-<div class="card">
-  <strong>12/26 </strong> 합창제
-<div class="card">
-  <strong>12/31 </strong> 겨울방학식
+<h2> 학교 행사 캘린더</h2>
+<a href="index.html">← 홈으로</a>
+
+<div style="margin-top:15px;">
+  <input type="date" id="eventDate">
+  <input type="text" id="eventText" placeholder="행사 내용">
+  <button onclick="addEvent()">추가</button>
 </div>
 
-<script src="./event_alert.js"></script>
+<div class="calendar" id="calendar">
+  <div class="head">일</div><div class="head">월</div><div class="head">화</div>
+  <div class="head">수</div><div class="head">목</div><div class="head">금</div>
+  <div class="head">토</div>
+</div>
+
+<script>
+const calendar = document.getElementById('calendar');
+const today = new Date();
+const year = today.getFullYear();
+const month = today.getMonth();
+
+let events = JSON.parse(localStorage.calendarEvents || "{}");
+
+function drawCalendar(){
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month+1, 0).getDate();
+
+  for(let i=0;i<firstDay;i++){
+    calendar.innerHTML += "<div></div>";
+  }
+
+  for(let d=1; d<=lastDate; d++){
+    const dateKey = `${year}-${month+1}-${d}`;
+    const box = document.createElement("div");
+    box.className="day";
+    box.innerHTML = `<div class="day-number">${d}</div>`;
+
+    if(events[dateKey]){
+      events[dateKey].forEach(e=>{
+        box.innerHTML += `<div class="event">${e}</div>`;
+      });
+    }
+    calendar.appendChild(box);
+  }
+}
+
+function addEvent(){
+  const date = eventDate.value;
+  if(!date || !eventText.value) return;
+
+  if(!events[date]) events[date] = [];
+  events[date].push(eventText.value);
+
+  localStorage.calendarEvents = JSON.stringify(events);
+  location.reload();
+}
+
+drawCalendar();
+</script>
+
 </body>
 </html>
