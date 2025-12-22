@@ -1,41 +1,5 @@
-.alert-section {
-  margin-bottom: 30px;
+.alert {
+  background: #ffe3e3;
+  padding: 15px;
+  border-left: 5px solid red;
 }
-
-.alert-card {
-  background: white;
-  border-left: 4px solid #667eea;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.alert-card.urgent {
-  border-left-color: #dc3545;
-  background: #fff5f5;
-}
-
-.alert-card.warning {
-  border-left-color: #ffc107;
-  background: #fffef5;
-}
-
-.deadline {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #667eea;
-  color: white;
-}
-
-.deadline.urgent {
-  background: #dc3545;
-}
-
-.deadline.warning {
-  background: #ffc107;
-  color: #212529;
-}
-
