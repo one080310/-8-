@@ -1,6 +1,6 @@
-
-document.querySelectorAll('.todo-item input[type="checkbox"]').forEach(cb => {
+document.querySelectorAll('input').forEach(cb => {
   cb.addEventListener('change', () => {
-    cb.parentElement.classList.toggle('completed', cb.checked);
+    cb.parentElement.style.textDecoration =
+      cb.checked ? 'line-through' : '';
   });
 });
