@@ -2,36 +2,154 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>자습 체크</title>
+<title>자습 체크리스트</title>
 <style>
-body { font-family: Segoe UI; padding:20px }
-table { width:100%; border-collapse:collapse }
-td,th { border:1px solid #ccc; padding:8px }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background:#f5f7fb;
+  padding:20px;
+}
+
+h2 { margin-bottom:10px; }
+
+a {
+  text-decoration:none;
+  color:#4a5bdc;
+  font-weight:600;
+}
+
+.class-buttons button {
+  margin:4px;
+  padding:6px 14px;
+  border:none;
+  border-radius:20px;
+  background:#e0e4ff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.class-buttons button.active {
+  background:#4a5bdc;
+  color:white;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  margin-top:15px;
+}
+
+th, td {
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+  font-size:14px;
+}
+
+th {
+  background:#eef1ff;
+}
 </style>
 </head>
 <body>
 
-<h2>✅ 자습 체크</h2>
-<a href="index.html">← 홈</a>
+<h2> 자습 체크리스트</h2>
+<a href="index.html">← 홈으로</a>
 
+<!-- 반 선택 -->
+<div class="class-buttons" id="classButtons"></div>
+
+<!-- 테이블 -->
 <table>
-<tr><th>이름</th><th>자습 여부</th></tr>
-<tr>
-  <td> 돼지유진 </td>
-  <td><input type="checkbox" id="s1"></td>
-</tr>
-<tr>
-  <td> 돼유 </td>
-  <td><input type="checkbox" id="s2"></td>
-</tr>
+  <thead>
+    <tr>
+      <th rowspan="2">번호</th>
+      <th colspan="5">주간 자습</th>
+      <th colspan="2">야간 자습</th>
+    </tr>
+    <tr>
+      <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
+      <th>야자1</th><th>야자2</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
 </table>
 
 <script>
-["s1","s2"].forEach(id=>{
-  const el=document.getElementById(id);
-  el.checked = localStorage[id]==="true";
-  el.onchange=()=>localStorage[id]=el.checked;
-});
+/* ===== 전역 ===== */
+let currentClass = "1반";
+const tableBody = document.getElementById("tableBody");
+const classButtons = document.getElementById("classButtons");
+
+/* ===== 반 버튼 생성 ===== */
+for(let i=1;i<=7;i++){
+  const btn=document.createElement("button");
+  btn.innerText=i+"반";
+  if(i===1) btn.classList.add("active");
+  btn.onclick=()=>switchClass(i+"반",btn);
+  classButtons.appendChild(btn);
+}
+
+/* ===== 반 전환 ===== */
+function switchClass(cls, btn){
+  currentClass=cls;
+  document.querySelectorAll(".class-buttons button")
+    .forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+/* ===== 데이터 ===== */
+function getData(){
+  let data = JSON.parse(localStorage.getItem("study_"+currentClass));
+  if(!data){
+    data = [];
+    for(let i=1;i<=24;i++){
+      data.push({
+        number: i,
+        checks: [false,false,false,false,false,false,false]
+      });
+    }
+    saveData(data);
+  }
+  return data;
+}
+
+function saveData(data){
+  localStorage.setItem("study_"+currentClass, JSON.stringify(data));
+}
+
+/* ===== 체크 ===== */
+function toggleCheck(sIndex, cIndex){
+  const data=getData();
+  data[sIndex].checks[cIndex]=!data[sIndex].checks[cIndex];
+  saveData(data);
+}
+
+/* ===== 렌더 ===== */
+function render(){
+  const data=getData();
+  tableBody.innerHTML="";
+
+  data.forEach((student, sIndex)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${student.number}</td>`;
+
+    student.checks.forEach((checked,cIndex)=>{
+      tr.innerHTML+=`
+        <td>
+          <input type="checkbox"
+            ${checked?"checked":""}
+            onclick="toggleCheck(${sIndex},${cIndex})">
+        </td>`;
+    });
+
+    tableBody.appendChild(tr);
+  });
+}
+
+render();
 </script>
 
 </body>
