@@ -2,51 +2,163 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>투두리스트</title>
+<title>반별 투두리스트</title>
 <style>
-body { font-family: Segoe UI; padding:20px; background:#f5f7fb }
-.card { background:white; padding:15px; border-radius:8px; margin-bottom:15px }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background:#f5f7fb;
+  padding:20px;
+}
+
+h2 {
+  margin-bottom:10px;
+}
+
+a {
+  text-decoration:none;
+  color:#4a5bdc;
+  font-weight:600;
+}
+
+.class-buttons {
+  margin: 15px 0;
+}
+
+.class-buttons button {
+  margin:5px;
+  padding:8px 16px;
+  border:none;
+  border-radius:20px;
+  background:#e0e4ff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.class-buttons button.active {
+  background:#4a5bdc;
+  color:white;
+}
+
+.input-box {
+  margin-bottom:20px;
+}
+
+.input-box input {
+  padding:8px;
+  margin-right:5px;
+}
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
 </style>
 </head>
 <body>
 
-<h2>📝 학생 투두리스트</h2>
-<a href="index.html">← 홈</a>
+<h2>📝 반별 학생 투두리스트</h2>
+<a href="index.html">← 홈으로</a>
 
-<input id="name" placeholder="학생 이름">
-<input id="task" placeholder="할 일">
-<button onclick="addTodo()">추가</button>
+<!-- 반 선택 버튼 -->
+<div class="class-buttons" id="classButtons"></div>
 
-<div id="list"></div>
+<!-- 입력 영역 -->
+<div class="input-box">
+  <input id="studentName" placeholder="학생 이름">
+  <input id="taskInput" placeholder="할 일">
+  <button onclick="addTodo()">추가</button>
+</div>
+
+<!-- 투두 목록 -->
+<div id="todoList"></div>
 
 <script>
-let data = JSON.parse(localStorage.todos || "[]");
+/* ===== 전역 변수 ===== */
+let currentClass = "1반";
+const classButtons = document.getElementById("classButtons");
+const todoList = document.getElementById("todoList");
+const studentNameInput = document.getElementById("studentName");
+const taskInput = document.getElementById("taskInput");
 
-function render(){
-  list.innerHTML = "";
-  data.forEach((d,i)=>{
-    list.innerHTML += `
-      <div class="card">
-        <strong>${d.name}</strong><br>
-        <label>
-          <input type="checkbox" ${d.done?"checked":""}
-          onchange="toggle(${i})"> ${d.task}
-        </label>
-      </div>`;
-  });
+/* ===== 반 버튼 생성 (1~7반) ===== */
+for (let i = 1; i <= 7; i++) {
+  const btn = document.createElement("button");
+  btn.innerText = i + "반";
+  if (i === 1) btn.classList.add("active");
+
+  btn.onclick = () => switchClass(i + "반", btn);
+  classButtons.appendChild(btn);
 }
 
-function addTodo(){
-  data.push({name:name.value, task:task.value, done:false});
-  localStorage.todos = JSON.stringify(data);
+/* ===== 반 전환 ===== */
+function switchClass(cls, btn) {
+  currentClass = cls;
+
+  document
+    .querySelectorAll(".class-buttons button")
+    .forEach(b => b.classList.remove("active"));
+
+  btn.classList.add("active");
   render();
 }
 
-function toggle(i){
-  data[i].done = !data[i].done;
-  localStorage.todos = JSON.stringify(data);
+/* ===== 데이터 불러오기 ===== */
+function getData() {
+  return JSON.parse(localStorage.getItem("todo_" + currentClass) || "[]");
 }
 
+/* ===== 데이터 저장 ===== */
+function saveData(data) {
+  localStorage.setItem("todo_" + currentClass, JSON.stringify(data));
+}
+
+/* ===== 화면 출력 ===== */
+function render() {
+  const data = getData();
+  todoList.innerHTML = "";
+
+  data.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <strong>${item.name}</strong><br>
+      <label>
+        <input type="checkbox" ${item.done ? "checked" : ""}
+          onchange="toggleDone(${index})">
+        ${item.task}
+      </label>
+    `;
+    todoList.appendChild(div);
+  });
+}
+
+/* ===== 투두 추가 ===== */
+function addTodo() {
+  if (!studentNameInput.value || !taskInput.value) return;
+
+  const data = getData();
+  data.push({
+    name: studentNameInput.value,
+    task: taskInput.value,
+    done: false
+  });
+
+  saveData(data);
+  studentNameInput.value = "";
+  taskInput.value = "";
+  render();
+}
+
+/* ===== 완료 체크 ===== */
+function toggleDone(index) {
+  const data = getData();
+  data[index].done = !data[index].done;
+  saveData(data);
+}
+
+/* ===== 최초 렌더 ===== */
 render();
 </script>
 
