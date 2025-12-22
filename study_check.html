@@ -1,23 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>자습 체크</title>
+  <title>자습 체크리스트</title>
   <link rel="stylesheet" href="./common.css">
   <link rel="stylesheet" href="./layout.css">
-  <link rel="stylesheet" href="./study_check.css">
-  <script src="./study_check.js" defer></script>
 </head>
 <body>
 
-<nav class="nav-tabs">
-  <a href="index.html">게시판</a>
-  <a class="active" href="#">자습</a>
-</nav>
+<h2> 자습 체크리스트</h2>
 
-<div class="content">
-  <input type="checkbox"> 오늘 자습
-</div>
+<table>
+  <tr>
+    <th>반</th><th>이름</th><th>자습</th>
+  </tr>
+  <tr>
+    <td>1반</td><td> 강듀진 </td>
+    <td><input type="checkbox"></td>
+  </tr>
+</table>
 
+<script src="./study_check.js"></script>
 </body>
 </html>
