@@ -1,5 +1,5 @@
-.alert {
-  background: #ffe3e3;
+.event {
+  background: white;
   padding: 15px;
-  border-left: 5px solid red;
+  border-radius: 6px;
 }
