@@ -3,113 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <title>반별 투두리스트</title>
+<style>
+body {
+  font-family:'Segoe UI', sans-serif;
+  background:#f5f7fb;
+  padding:20px;
+}
+
+h2 { margin-bottom:8px; }
+
+a {
+  text-decoration:none;
+  color:#4a5bdc;
+  font-weight:600;
+}
+
+.date-bar {
+  display:flex;
+  align-items:center;
+  gap:15px;
+  margin:15px 0;
+}
+
+.date-bar button {
+  padding:4px 10px;
+  font-size:16px;
+}
+
+.class-buttons button {
+  margin:4px;
+  padding:6px 14px;
+  border:none;
+  border-radius:20px;
+  background:#e0e4ff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.class-buttons button.active {
+  background:#4a5bdc;
+  color:white;
+}
+
+.student {
+  background:white;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.06);
+}
+
+.task {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:4px 0;
+}
+
+.task.done span {
+  text-decoration:line-through;
+  opacity:0.6;
+}
+
+.task button {
+  background:#ff6b6b;
+  border:none;
+  color:white;
+  padding:2px 6px;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.add-task {
+  margin-top:6px;
+}
+
+.add-task input {
+  width:70%;
+}
+</style>
 </head>
 <body>
 
 <h2>📝 반별 투두리스트</h2>
 <a href="index.html">← 홈으로</a>
 
+<!-- 날짜 -->
+<div class="date-bar">
+  <button onclick="changeDate(-1)">◀</button>
+  <strong id="dateText"></strong>
+  <button onclick="changeDate(1)">▶</button>
+</div>
+
 <!-- 반 선택 -->
 <div class="class-buttons" id="classButtons"></div>
 
-<!-- 학생 영역 -->
+<!-- 학생 -->
 <div id="studentArea"></div>
 
 <script>
-let currentClass = "1반";
-const studentArea = document.getElementById("studentArea");
-const classButtons = document.getElementById("classButtons");
+let currentClass="1반";
+let currentDate=new Date();
+
+const studentArea=document.getElementById("studentArea");
+const dateText=document.getElementById("dateText");
+
+/* 날짜 */
+function formatDate(d){
+  return d.toISOString().slice(0,10);
+}
+function showDate(){
+  dateText.innerText =
+    `${currentDate.getMonth()+1} / ${currentDate.getDate()}`;
+}
+function changeDate(diff){
+  currentDate.setDate(currentDate.getDate()+diff);
+  showDate();
+  render();
+}
 
 /* 반 버튼 */
 for(let i=1;i<=7;i++){
   const btn=document.createElement("button");
   btn.innerText=i+"반";
   if(i===1) btn.classList.add("active");
-  btn.onclick=()=>switchClass(i+"반",btn);
+  btn.onclick=()=>{
+    document.querySelectorAll(".class-buttons button")
+      .forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentClass=i+"반";
+    render();
+  };
   classButtons.appendChild(btn);
 }
 
-function switchClass(cls, btn){
-  currentClass=cls;
-  document.querySelectorAll(".class-buttons button")
-    .forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  render();
+/* 데이터 */
+function key(){
+  return `todo_${currentClass}_${formatDate(currentDate)}`;
 }
 
-/* 데이터 */
 function getData(){
-  let data = JSON.parse(localStorage.getItem("todo_"+currentClass));
+  let data=JSON.parse(localStorage.getItem(key()));
   if(!data){
     data=[];
     for(let i=1;i<=24;i++){
-      data.push({
-        number:i,
-        tasks:[]
-      });
+      data.push({number:i,tasks:[]});
     }
     saveData(data);
   }
   return data;
 }
 
-function saveData(data){
-  localStorage.setItem("todo_"+currentClass, JSON.stringify(data));
+function saveData(d){
+  localStorage.setItem(key(),JSON.stringify(d));
 }
 
-/* 할 일 추가 */
-function addTask(studentIndex, input){
+/* 기능 */
+function addTask(sIndex,input){
   if(!input.value) return;
-
-  const data=getData();
-  data[studentIndex].tasks.push({
-    text: input.value,
-    done:false
-  });
-  saveData(data);
+  const d=getData();
+  d[sIndex].tasks.push({text:input.value,done:false});
+  saveData(d);
   render();
 }
 
-/* 체크 */
-function toggleDone(sIndex, tIndex){
-  const data=getData();
-  data[sIndex].tasks[tIndex].done =
-    !data[sIndex].tasks[tIndex].done;
-  saveData(data);
+function toggle(s,t){
+  const d=getData();
+  d[s].tasks[t].done=!d[s].tasks[t].done;
+  saveData(d);
+  render();
+}
+
+function removeTask(s,t){
+  const d=getData();
+  d[s].tasks.splice(t,1);
+  saveData(d);
+  render();
 }
 
 /* 렌더 */
 function render(){
-  const data=getData();
+  const d=getData();
   studentArea.innerHTML="";
 
-  data.forEach((student, sIndex)=>{
-    const div=document.createElement("div");
-    div.className="student";
-    div.innerHTML=`<h3>${student.number}번</h3>`;
+  d.forEach((stu,s)=>{
+    const box=document.createElement("div");
+    box.className="student";
+    box.innerHTML=`<h3>${stu.number}번</h3>`;
 
-    student.tasks.forEach((task,tIndex)=>{
-      div.innerHTML+=`
-        <div class="task">
-          <input type="text" value="${task.text}" readonly>
+    stu.tasks.forEach((task,t)=>{
+      box.innerHTML+=`
+        <div class="task ${task.done?"done":""}">
           <input type="checkbox"
             ${task.done?"checked":""}
-            onclick="toggleDone(${sIndex},${tIndex})">
+            onclick="toggle(${s},${t})">
+          <span>${task.text}</span>
+          <button onclick="removeTask(${s},${t})">X</button>
         </div>`;
     });
 
-    div.innerHTML+=`
+    box.innerHTML+=`
       <div class="add-task">
         <input placeholder="할 일 추가"
-          onkeydown="if(event.key==='Enter') addTask(${sIndex}, this)">
-        <button onclick="addTask(${sIndex}, this.previousElementSibling)">추가</button>
-      </div>
-    `;
-
-    studentArea.appendChild(div);
+          onkeydown="if(event.key==='Enter') addTask(${s},this)">
+        <button onclick="addTask(${s},this.previousElementSibling)">추가</button>
+      </div>`;
+    studentArea.appendChild(box);
   });
 }
 
+showDate();
 render();
 </script>
 
