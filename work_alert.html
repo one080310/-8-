@@ -1,23 +1,178 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>과제 알림</title>
-  <link rel="stylesheet" href="./common.css">
-  <link rel="stylesheet" href="./layout.css">
+<meta charset="UTF-8">
+<title>과제 알림</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background:#f5f7fb;
+  padding:20px;
+}
+
+h2 { margin-bottom:5px; }
+
+a {
+  text-decoration:none;
+  color:#4a5bdc;
+  font-weight:600;
+}
+
+.class-buttons button {
+  margin:4px;
+  padding:6px 14px;
+  border:none;
+  border-radius:20px;
+  background:#e0e4ff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.class-buttons button.active {
+  background:#4a5bdc;
+  color:white;
+}
+
+.add-box {
+  margin:15px 0;
+}
+
+.add-box input {
+  padding:6px;
+  margin-right:6px;
+}
+
+.notice {
+  background:white;
+  border-radius:10px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.06);
+}
+
+.notice h3 {
+  margin:0 0 8px 0;
+}
+
+.notice p {
+  margin:4px 0;
+}
+
+.notice button {
+  margin-top:8px;
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  background:#4a5bdc;
+  color:white;
+  cursor:pointer;
+}
+</style>
 </head>
 <body>
 
 <h2> 과제 알림</h2>
+<a href="index.html">← 홈으로</a>
 
-<div class="alert urgent">
- 12/nn 수학 수행평가 (제출현황이나왓으면)
+<!-- 반 선택 -->
+<div class="class-buttons" id="classButtons"></div>
+
+<!-- 과제 추가 -->
+<div class="add-box">
+  <input id="titleInput" placeholder="과제 제목">
+  <input id="dateInput" type="date">
+  <input id="contentInput" placeholder="과제 내용">
+  <button onclick="addTask()">공지 추가</button>
 </div>
 
-<div class="alert warning">
-  마찬가지
-</div>
+<!-- 공지 영역 -->
+<div id="noticeArea"></div>
 
-<script src="./work_alert.js"></script>
+<script>
+let currentClass = "1반";
+const noticeArea = document.getElementById("noticeArea");
+const classButtons = document.getElementById("classButtons");
+
+const titleInput = document.getElementById("titleInput");
+const dateInput = document.getElementById("dateInput");
+const contentInput = document.getElementById("contentInput");
+
+/* 반 버튼 */
+for(let i=1;i<=7;i++){
+  const btn=document.createElement("button");
+  btn.innerText=i+"반";
+  if(i===1) btn.classList.add("active");
+  btn.onclick=()=>switchClass(i+"반",btn);
+  classButtons.appendChild(btn);
+}
+
+function switchClass(cls, btn){
+  currentClass=cls;
+  document.querySelectorAll(".class-buttons button")
+    .forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+/* 데이터 */
+function getData(){
+  return JSON.parse(localStorage.getItem("task_"+currentClass) || "[]");
+}
+
+function saveData(data){
+  localStorage.setItem("task_"+currentClass, JSON.stringify(data));
+}
+
+/* 과제 추가 */
+function addTask(){
+  if(!titleInput.value || !dateInput.value) return;
+
+  const data=getData();
+  data.unshift({
+    title:titleInput.value,
+    date:dateInput.value,
+    content:contentInput.value,
+    submitted:0
+  });
+
+  saveData(data);
+
+  titleInput.value="";
+  dateInput.value="";
+  contentInput.value="";
+
+  render();
+}
+
+/* 제출 +1 */
+function submitTask(index){
+  const data=getData();
+  data[index].submitted++;
+  saveData(data);
+  render();
+}
+
+/* 렌더 */
+function render(){
+  const data=getData();
+  noticeArea.innerHTML="";
+
+  data.forEach((task,index)=>{
+    const div=document.createElement("div");
+    div.className="notice";
+    div.innerHTML=`
+      <h3>${task.title}</h3>
+      <p> 마감기한: ${task.date}</p>
+      <p> ${task.content || "내용 없음"}</p>
+      <p> 제출 인원: ${task.submitted}명</p>
+      <button onclick="submitTask(${index})">제출 완료</button>
+    `;
+    noticeArea.appendChild(div);
+  });
+}
+
+render();
+</script>
+
 </body>
 </html>
