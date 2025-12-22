@@ -5,12 +5,12 @@
 <title>자습 체크리스트</title>
 <style>
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family:'Segoe UI', sans-serif;
   background:#f5f7fb;
   padding:20px;
 }
 
-h2 { margin-bottom:10px; }
+h2 { margin-bottom:6px; }
 
 a {
   text-decoration:none;
@@ -38,13 +38,13 @@ table {
   border-collapse:collapse;
   background:white;
   margin-top:15px;
+  font-size:13px;
 }
 
 th, td {
   border:1px solid #ccc;
-  padding:6px;
+  padding:4px;
   text-align:center;
-  font-size:14px;
 }
 
 th {
@@ -54,35 +54,35 @@ th {
 </head>
 <body>
 
-<h2> 자습 체크리스트</h2>
+<h2>📘 자습 체크리스트</h2>
 <a href="index.html">← 홈으로</a>
 
 <!-- 반 선택 -->
 <div class="class-buttons" id="classButtons"></div>
 
-<!-- 테이블 -->
 <table>
   <thead>
     <tr>
       <th rowspan="2">번호</th>
-      <th colspan="5">주간 자습</th>
-      <th colspan="2">야간 자습</th>
+      <th colspan="15">자습 체크</th>
     </tr>
     <tr>
-      <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
-      <th>야자1</th><th>야자2</th>
+      <th>월8</th><th>월야1</th><th>월야2</th>
+      <th>화8</th><th>화야1</th><th>화야2</th>
+      <th>수8</th><th>수야1</th><th>수야2</th>
+      <th>목8</th><th>목야1</th><th>목야2</th>
+      <th>금8</th><th>금야1</th><th>금야2</th>
     </tr>
   </thead>
   <tbody id="tableBody"></tbody>
 </table>
 
 <script>
-/* ===== 전역 ===== */
 let currentClass = "1반";
 const tableBody = document.getElementById("tableBody");
 const classButtons = document.getElementById("classButtons");
 
-/* ===== 반 버튼 생성 ===== */
+/* 반 버튼 */
 for(let i=1;i<=7;i++){
   const btn=document.createElement("button");
   btn.innerText=i+"반";
@@ -91,7 +91,6 @@ for(let i=1;i<=7;i++){
   classButtons.appendChild(btn);
 }
 
-/* ===== 반 전환 ===== */
 function switchClass(cls, btn){
   currentClass=cls;
   document.querySelectorAll(".class-buttons button")
@@ -100,15 +99,15 @@ function switchClass(cls, btn){
   render();
 }
 
-/* ===== 데이터 ===== */
+/* 데이터 */
 function getData(){
   let data = JSON.parse(localStorage.getItem("study_"+currentClass));
   if(!data){
-    data = [];
+    data=[];
     for(let i=1;i<=24;i++){
       data.push({
-        number: i,
-        checks: [false,false,false,false,false,false,false]
+        number:i,
+        checks:Array(15).fill(false)
       });
     }
     saveData(data);
@@ -120,14 +119,14 @@ function saveData(data){
   localStorage.setItem("study_"+currentClass, JSON.stringify(data));
 }
 
-/* ===== 체크 ===== */
+/* 체크 */
 function toggleCheck(sIndex, cIndex){
   const data=getData();
   data[sIndex].checks[cIndex]=!data[sIndex].checks[cIndex];
   saveData(data);
 }
 
-/* ===== 렌더 ===== */
+/* 렌더 */
 function render(){
   const data=getData();
   tableBody.innerHTML="";
