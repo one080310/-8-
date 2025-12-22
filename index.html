@@ -2,88 +2,109 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>과제 공지</title>
-<link rel="stylesheet" href="./common.css">
+<title>학습 관리 웹사이트</title>
+<style>
+body {
+  font-family:'Segoe UI', sans-serif;
+  background:#f5f7fb;
+  padding:40px;
+  text-align:center;
+}
+
+.box {
+  background:white;
+  max-width:360px;
+  margin:0 auto;
+  padding:30px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+input {
+  width:90%;
+  padding:10px;
+  font-size:16px;
+  margin:10px 0;
+}
+
+button {
+  padding:10px 20px;
+  font-size:16px;
+  border:none;
+  border-radius:6px;
+  background:#4a5bdc;
+  color:white;
+  cursor:pointer;
+}
+
+.menu a {
+  display:block;
+  margin:12px 0;
+  font-weight:600;
+  color:#4a5bdc;
+  text-decoration:none;
+}
+</style>
 </head>
 <body>
 
-<h2>📢 과제 공지</h2>
-<a href="index.html">← 홈</a>
+<!-- 로그인 -->
+<div class="box" id="loginBox">
+  <h2>🔐 로그인</h2>
+  <p>학번 (1~24)</p>
+  <input type="number" id="studentNum" min="1" max="24">
+  <button onclick="login()">로그인</button>
+  <p id="msg" style="color:red;"></p>
+</div>
 
-<div id="workArea"></div>
+<!-- 메인 -->
+<div class="box" id="mainBox" style="display:none;">
+  <h2 id="welcome"></h2>
+
+  <div class="menu">
+    <a href="todo_list.html">📝 투두리스트</a>
+    <a href="study_check.html">📘 자습 체크</a>
+    <a href="work_alert.html">📢 과제 알림</a>
+    <a href="event_alert.html">📅 학교 행사</a>
+  </div>
+
+  <button onclick="logout()">로그아웃</button>
+</div>
 
 <script>
-const LOGIN_KEY="login_student";
+const loginBox=document.getElementById("loginBox");
+const mainBox=document.getElementById("mainBox");
+const welcome=document.getElementById("welcome");
+const msg=document.getElementById("msg");
 
-const works=[
-  {
-    id:"math",
-    title:"수학 수행평가",
-    content:"함수 단원 문제 풀이",
-    deadline:"2025-12-25"
-  },
-  {
-    id:"science",
-    title:"과학 자기평가서",
-    content:"학기 자기평가 작성",
-    deadline:"2025-12-27"
-  }
-];
-
-function render(){
-  const user=localStorage.getItem(LOGIN_KEY);
-  if(!user){
-    alert("로그인 필요");
-    location.href="index.html";
+/* 로그인 */
+function login(){
+  const num=document.getElementById("studentNum").value;
+  if(num<1||num>24){
+    msg.innerText="학번은 1~24번만 가능";
     return;
   }
-
-  const area=document.getElementById("workArea");
-  area.innerHTML="";
-
-  works.forEach(w=>{
-    const key="submit_"+w.id;
-    let list=JSON.parse(localStorage.getItem(key))||[];
-    const today=new Date().toISOString().slice(0,10);
-    const closed=today>w.deadline;
-
-    const submitted=list.includes(user);
-
-    area.innerHTML+=`
-      <div class="notice">
-        <h3>${w.title}</h3>
-        <p>${w.content}</p>
-        <p>마감: ${w.deadline}</p>
-        <p>제출 현황: ${list.length}/24</p>
-
-        <button 
-          onclick="submit('${w.id}')"
-          ${submitted||closed?"disabled":""}>
-          ${closed?"마감됨":submitted?"제출 완료":"제출"}
-        </button>
-
-        <details>
-          <summary>제출자 보기 (선생님)</summary>
-          ${list.map(n=>n+"번").join(", ")||"없음"}
-        </details>
-      </div>
-    `;
-  });
+  localStorage.setItem("loginStudent",num);
+  showMain();
 }
 
-function submit(id){
-  const user=localStorage.getItem(LOGIN_KEY);
-  const key="submit_"+id;
-  let list=JSON.parse(localStorage.getItem(key))||[];
+/* 로그아웃 */
+function logout(){
+  localStorage.removeItem("loginStudent");
+  location.reload();
+}
 
-  if(!list.includes(user)){
-    list.push(user);
-    localStorage.setItem(key,JSON.stringify(list));
-    render();
+/* 상태 */
+function showMain(){
+  const num=localStorage.getItem("loginStudent");
+  if(num){
+    loginBox.style.display="none";
+    mainBox.style.display="block";
+    welcome.innerText=`${num}번 학생 로그인됨`;
   }
 }
 
-render();
+showMain();
 </script>
 
 </body>
