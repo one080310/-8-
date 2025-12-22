@@ -2,17 +2,15 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>학습 관리 시스템</title>
+<title>과제 공지</title>
 <link rel="stylesheet" href="./common.css">
 <style>
-.topbar {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
+.notice {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
 }
-
-.hidden { display:none; }
 
 button {
   padding:6px 14px;
@@ -21,60 +19,92 @@ button {
   background:#4a5bdc;
   color:white;
   font-weight:600;
-  cursor:pointer;
+}
+
+button:disabled {
+  background:#ccc;
 }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <h1>🎓 학습 관리 시스템</h1>
-  <div id="userArea"></div>
-</div>
+<h2>📢 과제 공지</h2>
+<a href="index.html">← 홈</a>
 
-<!-- 로그인 -->
-<div id="loginBox">
-  학번(1~24):
-  <input id="loginNum" type="number" min="1" max="24">
-  <button onclick="login()">로그인</button>
-</div>
-
-<!-- 메뉴 -->
-<nav class="menu hidden" id="menu">
-  <a href="./todo_list.html">투두리스트</a>
-  <a href="./study_check.html">자습 체크</a>
-  <a href="./work_alert.html">과제 공지</a>
-  <a href="./event_alert.html">학교 행사</a>
-</nav>
+<div id="workArea"></div>
 
 <script>
 const LOGIN_KEY="login_student";
 
-function login(){
-  const n=document.getElementById("loginNum").value;
-  if(n<1||n>24){
-    alert("학번은 1~24만 가능");
+const works=[
+  {
+    id:"math",
+    title:"수학 수행평가",
+    content:"함수 단원 문제 풀이",
+    deadline:"2025-12-25"
+  },
+  {
+    id:"science",
+    title:"과학 자기평가서",
+    content:"학기 자기평가 작성",
+    deadline:"2025-12-27"
+  }
+];
+
+function render(){
+  const user=localStorage.getItem(LOGIN_KEY);
+  if(!user){
+    alert("로그인 필요");
+    location.href="index.html";
     return;
   }
-  localStorage.setItem(LOGIN_KEY,n);
-  init();
+
+  const area=document.getElementById("workArea");
+  area.innerHTML="";
+
+  works.forEach(w=>{
+    const key="submit_"+w.id;
+    let list=JSON.parse(localStorage.getItem(key))||[];
+    const today=new Date().toISOString().slice(0,10);
+    const closed=today>w.deadline;
+
+    const submitted=list.includes(user);
+
+    area.innerHTML+=`
+      <div class="notice">
+        <h3>${w.title}</h3>
+        <p>${w.content}</p>
+        <p>마감: ${w.deadline}</p>
+        <p>제출 현황: ${list.length}/24</p>
+
+        <button 
+          onclick="submit('${w.id}')"
+          ${submitted||closed?"disabled":""}>
+          ${closed?"마감됨":submitted?"제출 완료":"제출"}
+        </button>
+
+        <details>
+          <summary>제출자 보기 (선생님)</summary>
+          ${list.map(n=>n+"번").join(", ")||"없음"}
+        </details>
+      </div>
+    `;
+  });
 }
 
-function logout(){
-  localStorage.removeItem(LOGIN_KEY);
-  location.reload();
-}
-
-function init(){
+function submit(id){
   const user=localStorage.getItem(LOGIN_KEY);
-  if(user){
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("menu").classList.remove("hidden");
-    document.getElementById("userArea").innerHTML=
-      `${user}번 로그인 <button onclick="logout()">로그아웃</button>`;
+  const key="submit_"+id;
+  let list=JSON.parse(localStorage.getItem(key))||[];
+
+  if(!list.includes(user)){
+    list.push(user);
+    localStorage.setItem(key,JSON.stringify(list));
+    render();
   }
 }
-init();
+
+render();
 </script>
 
 </body>
