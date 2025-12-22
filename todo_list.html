@@ -1,23 +1,54 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title> 투두리스트</title>
-  <link rel="stylesheet" href="./common.css">
-  <link rel="stylesheet" href="./layout.css">
+<meta charset="UTF-8">
+<title>투두리스트</title>
+<style>
+body { font-family: Segoe UI; padding:20px; background:#f5f7fb }
+.card { background:white; padding:15px; border-radius:8px; margin-bottom:15px }
+</style>
 </head>
 <body>
 
-<h2> 투두리스트</h2>
+<h2>📝 학생 투두리스트</h2>
+<a href="index.html">← 홈</a>
 
-<div class="card">
-  <h3>김철수 (1반)</h3>
-  <ul>
-    <li><input type="checkbox"> 자평서쓰기ㅠㅠ </li>
-    <li><input type="checkbox"> 잠자기ㅠㅠ </li>
-  </ul>
-</div>
+<input id="name" placeholder="학생 이름">
+<input id="task" placeholder="할 일">
+<button onclick="addTodo()">추가</button>
 
-<script src="./todo_list.js"></script>
+<div id="list"></div>
+
+<script>
+let data = JSON.parse(localStorage.todos || "[]");
+
+function render(){
+  list.innerHTML = "";
+  data.forEach((d,i)=>{
+    list.innerHTML += `
+      <div class="card">
+        <strong>${d.name}</strong><br>
+        <label>
+          <input type="checkbox" ${d.done?"checked":""}
+          onchange="toggle(${i})"> ${d.task}
+        </label>
+      </div>`;
+  });
+}
+
+function addTodo(){
+  data.push({name:name.value, task:task.value, done:false});
+  localStorage.todos = JSON.stringify(data);
+  render();
+}
+
+function toggle(i){
+  data[i].done = !data[i].done;
+  localStorage.todos = JSON.stringify(data);
+}
+
+render();
+</script>
+
 </body>
 </html>
