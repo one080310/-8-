@@ -1,81 +1,19 @@
-
 .class-selector {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.class-btn {
-  padding: 10px 20px;
-  border: 2px solid #667eea;
-  background: white;
-  color: #667eea;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.class-btn.active {
-  background: #667eea;
-  color: white;
-}
-
-.post-form {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.form-group {
   margin-bottom: 15px;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
+.class-btn {
+  margin-right: 5px;
+  padding: 8px 12px;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  border: 2px solid #dee2e6;
-  border-radius: 8px;
+.post-form {
+  margin-bottom: 20px;
 }
 
-.posts-list {
-  display: grid;
-  gap: 15px;
-}
-
-.post-card {
-  border: 2px solid #dee2e6;
-  border-radius: 10px;
-  padding: 20px;
-}
-
-.post-header {
-  display: flex;
-  justify-content: space-between;
+.posts-list .post {
+  background: white;
+  padding: 15px;
   margin-bottom: 10px;
-}
-
-.post-title {
-  font-size: 1.2em;
-  font-weight: 700;
-}
-
-.post-badge {
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-assignment {
-  background: #ffc107;
+  border-radius: 6px;
 }
