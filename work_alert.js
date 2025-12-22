@@ -1,1 +1,6 @@
-console.log("과제 알림 로드");
+document.querySelectorAll('.homework input').forEach(cb => {
+  cb.addEventListener('change', () => {
+    cb.nextElementSibling.style.textDecoration =
+      cb.checked ? 'line-through' : '';
+  });
+});
