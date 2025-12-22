@@ -5,6 +5,13 @@
 <title>학교 행사 캘린더</title>
 
 <style>
+  
+.today {
+  border: 2px solid #ff5252;
+  background: #fff5f5;
+}
+
+  
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
@@ -89,7 +96,7 @@ h2 {
   <div class="head">금</div>
   <div class="head">토</div>
 </div>
-
+--------------------------------------------------
 <script>
 const calendar = document.getElementById('calendar');
 const today = new Date();
@@ -114,6 +121,17 @@ function drawCalendar(){
     const dateKey = formatDate(year, month + 1, d);
     const box = document.createElement("div");
     box.className = "day";
+
+    const todayKey = formatDate(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    today.getDate()
+  );
+
+if (dateKey === todayKey) {
+  box.classList.add("today");
+}
+;
 
     box.innerHTML = `<div class="day-number">${d}</div>`;
 
