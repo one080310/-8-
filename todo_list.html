@@ -18,6 +18,7 @@ a {
   font-weight:600;
 }
 
+/* 날짜 선택 영역 */
 .date-bar {
   display:flex;
   align-items:center;
@@ -26,10 +27,28 @@ a {
 }
 
 .date-bar button {
-  padding:4px 10px;
-  font-size:16px;
+  padding:8px 16px;
+  font-size:18px;
+  border:none;
+  background:#4a5bdc;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
 }
 
+.date-bar button:hover {
+  background:#3849c7;
+}
+
+.date-bar strong {
+  font-size:20px;
+  color:#333;
+  min-width:120px;
+  text-align:center;
+}
+
+/* 반 선택 버튼 */
 .class-buttons button {
   margin:4px;
   padding:6px 14px;
@@ -45,6 +64,7 @@ a {
   color:white;
 }
 
+/* 학생 카드 */
 .student {
   background:white;
   border-radius:10px;
@@ -53,6 +73,12 @@ a {
   box-shadow:0 4px 10px rgba(0,0,0,0.06);
 }
 
+.student h3 {
+  color:#4a5bdc;
+  margin-bottom:8px;
+}
+
+/* 할 일 항목 */
 .task {
   display:flex;
   align-items:center;
@@ -72,14 +98,38 @@ a {
   padding:2px 6px;
   border-radius:4px;
   cursor:pointer;
+  font-size:12px;
 }
 
+.task button:hover {
+  background:#ff5252;
+}
+
+/* 할 일 추가 영역 */
 .add-task {
-  margin-top:6px;
+  margin-top:8px;
+  display:flex;
+  gap:5px;
 }
 
 .add-task input {
-  width:70%;
+  flex:1;
+  padding:6px;
+  border:1px solid #ddd;
+  border-radius:5px;
+}
+
+.add-task button {
+  padding:6px 12px;
+  background:#4a5bdc;
+  color:white;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.add-task button:hover {
+  background:#3849c7;
 }
 </style>
 </head>
@@ -88,7 +138,7 @@ a {
 <h2>📝 반별 투두리스트</h2>
 <a href="index.html">← 홈으로</a>
 
-<!-- 날짜 -->
+<!-- 날짜 선택 -->
 <div class="date-bar">
   <button onclick="changeDate(-1)">◀</button>
   <strong id="dateText"></strong>
@@ -98,35 +148,44 @@ a {
 <!-- 반 선택 -->
 <div class="class-buttons" id="classButtons"></div>
 
-<!-- 학생 -->
+<!-- 학생 목록 -->
 <div id="studentArea"></div>
 
 <script>
-let currentClass="1반";
-let currentDate=new Date();
+/* === 전역 변수 === */
+let currentClass="1반"; // 현재 선택된 반
+let currentDate=new Date(); // 현재 날짜 객체
 
 const studentArea=document.getElementById("studentArea");
 const dateText=document.getElementById("dateText");
 
-/* 날짜 */
+/* === 날짜 포맷 함수 === */
 function formatDate(d){
-  return d.toISOString().slice(0,10);
-}
-function showDate(){
-  dateText.innerText =
-    `${currentDate.getMonth()+1} / ${currentDate.getDate()}`;
-}
-function changeDate(diff){
-  currentDate.setDate(currentDate.getDate()+diff);
-  showDate();
-  render();
+  const year = d.getFullYear(); // 연도
+  const month = String(d.getMonth()+1).padStart(2,'0'); // 월 (0부터 시작하므로 +1)
+  const day = String(d.getDate()).padStart(2,'0'); // 일
+  return `${year}-${month}-${day}`; // "2024-12-23" 형식
 }
 
-/* 반 버튼 */
+/* === 날짜 표시 함수 === */
+function showDate(){
+  const month = currentDate.getMonth()+1; // 월 (1~12)
+  const day = currentDate.getDate(); // 일 (1~31)
+  dateText.innerText = `${month}월 ${day}일`; // "12월 23일" 형식
+}
+
+/* === 날짜 변경 함수 === */
+function changeDate(diff){
+  currentDate.setDate(currentDate.getDate() + diff); // 날짜에 diff만큼 더하거나 빼기 (-1: 전날, +1: 다음날)
+  showDate(); // 날짜 텍스트 업데이트
+  render(); // 화면 다시 그리기
+}
+
+/* === 반 버튼 생성 (1~7반) === */
 for(let i=1;i<=7;i++){
   const btn=document.createElement("button");
   btn.innerText=i+"반";
-  if(i===1) btn.classList.add("active");
+  if(i===1) btn.classList.add("active"); // 1반 기본 선택
   btn.onclick=()=>{
     document.querySelectorAll(".class-buttons button")
       .forEach(b=>b.classList.remove("active"));
@@ -137,51 +196,56 @@ for(let i=1;i<=7;i++){
   classButtons.appendChild(btn);
 }
 
-/* 데이터 */
+/* === 로컬스토리지 키 생성 === */
 function key(){
-  return `todo_${currentClass}_${formatDate(currentDate)}`;
+  return `todo_${currentClass}_${formatDate(currentDate)}`; // 예: "todo_1반_2024-12-23"
 }
 
+/* === 데이터 가져오기 === */
 function getData(){
   let data=JSON.parse(localStorage.getItem(key()));
-  if(!data){
+  if(!data){ // 데이터가 없으면 초기화
     data=[];
-    for(let i=1;i<=24;i++){
-      data.push({number:i,tasks:[]});
+    for(let i=1;i<=24;i++){ // 1~24번 학생
+      data.push({number:i, tasks:[]}); // 번호와 빈 할 일 목록
     }
     saveData(data);
   }
   return data;
 }
 
+/* === 데이터 저장 === */
 function saveData(d){
   localStorage.setItem(key(),JSON.stringify(d));
 }
 
-/* 기능 */
+/* === 할 일 추가 === */
 function addTask(sIndex,input){
-  if(!input.value) return;
+  if(!input.value.trim()) return; // 빈 입력 무시
   const d=getData();
-  d[sIndex].tasks.push({text:input.value,done:false});
+  d[sIndex].tasks.push({text:input.value, done:false}); // 새 할 일 추가
   saveData(d);
+  input.value = ""; // 입력창 비우기
   render();
 }
 
+/* === 완료 토글 === */
 function toggle(s,t){
   const d=getData();
-  d[s].tasks[t].done=!d[s].tasks[t].done;
+  d[s].tasks[t].done=!d[s].tasks[t].done; // 완료 상태 반전
   saveData(d);
   render();
 }
 
+/* === 할 일 삭제 === */
 function removeTask(s,t){
   const d=getData();
-  d[s].tasks.splice(t,1);
+  d[s].tasks.splice(t,1); // 해당 할 일 삭제
   saveData(d);
   render();
 }
 
-/* 렌더 */
+/* === 화면 렌더링 === */
 function render(){
   const d=getData();
   studentArea.innerHTML="";
@@ -191,29 +255,53 @@ function render(){
     box.className="student";
     box.innerHTML=`<h3>${stu.number}번</h3>`;
 
+    // 할 일 목록 표시
     stu.tasks.forEach((task,t)=>{
-      box.innerHTML+=`
-        <div class="task ${task.done?"done":""}">
-          <input type="checkbox"
-            ${task.done?"checked":""}
-            onclick="toggle(${s},${t})">
-          <span>${task.text}</span>
-          <button onclick="removeTask(${s},${t})">X</button>
-        </div>`;
+      const taskDiv = document.createElement("div");
+      taskDiv.className = `task ${task.done?"done":""}`;
+      
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = task.done;
+      checkbox.onclick = ()=>toggle(s,t);
+      
+      const span = document.createElement("span");
+      span.textContent = task.text;
+      
+      const btn = document.createElement("button");
+      btn.textContent = "X";
+      btn.onclick = ()=>removeTask(s,t);
+      
+      taskDiv.appendChild(checkbox);
+      taskDiv.appendChild(span);
+      taskDiv.appendChild(btn);
+      box.appendChild(taskDiv);
     });
 
-    box.innerHTML+=`
-      <div class="add-task">
-        <input placeholder="할 일 추가"
-          onkeydown="if(event.key==='Enter') addTask(${s},this)">
-        <button onclick="addTask(${s},this.previousElementSibling)">추가</button>
-      </div>`;
+    // 할 일 추가 입력창
+    const addDiv = document.createElement("div");
+    addDiv.className = "add-task";
+    
+    const input = document.createElement("input");
+    input.placeholder = "할 일 추가";
+    input.onkeydown = (e)=>{
+      if(e.key==="Enter") addTask(s, input);
+    };
+    
+    const addBtn = document.createElement("button");
+    addBtn.textContent = "추가";
+    addBtn.onclick = ()=>addTask(s, input);
+    
+    addDiv.appendChild(input);
+    addDiv.appendChild(addBtn);
+    box.appendChild(addDiv);
+    
     studentArea.appendChild(box);
   });
 }
 
-showDate();
-render();
+showDate(); // 초기 날짜 표시
+render(); // 초기 렌더링
 </script>
 
 </body>
