@@ -1,25 +1,38 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>자습 체크리스트</title>
-  <link rel="stylesheet" href="./common.css">
-  <link rel="stylesheet" href="./layout.css">
+<meta charset="UTF-8">
+<title>자습 체크</title>
+<style>
+body { font-family: Segoe UI; padding:20px }
+table { width:100%; border-collapse:collapse }
+td,th { border:1px solid #ccc; padding:8px }
+</style>
 </head>
 <body>
 
-<h2> 자습 체크리스트</h2>
+<h2>✅ 자습 체크</h2>
+<a href="index.html">← 홈</a>
 
 <table>
-  <tr>
-    <th>반</th><th>이름</th><th>자습</th>
-  </tr>
-  <tr>
-    <td>1반</td><td> 강듀진 </td>
-    <td><input type="checkbox"></td>
-  </tr>
+<tr><th>이름</th><th>자습 여부</th></tr>
+<tr>
+  <td> 돼지유진 </td>
+  <td><input type="checkbox" id="s1"></td>
+</tr>
+<tr>
+  <td> 돼유 </td>
+  <td><input type="checkbox" id="s2"></td>
+</tr>
 </table>
 
-<script src="./study_check.js"></script>
+<script>
+["s1","s2"].forEach(id=>{
+  const el=document.getElementById(id);
+  el.checked = localStorage[id]==="true";
+  el.onchange=()=>localStorage[id]=el.checked;
+});
+</script>
+
 </body>
 </html>
