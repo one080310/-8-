@@ -1,6 +1,1 @@
-document.querySelectorAll('.alert-card').forEach(card => {
-  card.addEventListener('click', () => {
-    alert('과제 상세 페이지 (데모)');
-  });
-});
-
+console.log("과제 알림 로드");
