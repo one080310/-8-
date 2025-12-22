@@ -2,31 +2,79 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>학습 관리 웹사이트</title>
+<title>학습 관리 시스템</title>
+<link rel="stylesheet" href="./common.css">
+<style>
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.hidden { display:none; }
+
+button {
+  padding:6px 14px;
+  border:none;
+  border-radius:6px;
+  background:#4a5bdc;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+</style>
 </head>
 <body>
 
-<h1>🎓 학습 관리 웹사이트</h1>
+<div class="topbar">
+  <h1>🎓 학습 관리 시스템</h1>
+  <div id="userArea"></div>
+</div>
 
-<nav class="menu">
-  <a href="todo_list.html">투두리스트</a>
-  <a href="study_check.html">자습 체크</a>
-  <a href="work_alert.html">과제 알림</a>
-  <a href="event_alert.html">학교 행사</a>
+<!-- 로그인 -->
+<div id="loginBox">
+  학번(1~24):
+  <input id="loginNum" type="number" min="1" max="24">
+  <button onclick="login()">로그인</button>
+</div>
+
+<!-- 메뉴 -->
+<nav class="menu hidden" id="menu">
+  <a href="./todo_list.html">투두리스트</a>
+  <a href="./study_check.html">자습 체크</a>
+  <a href="./work_alert.html">과제 공지</a>
+  <a href="./event_alert.html">학교 행사</a>
 </nav>
 
-  <script>
-const title = document.getElementById('post-title');
-const deadline = document.getElementById('deadline');
-const submit = document.getElementById('submit');
+<script>
+const LOGIN_KEY="login_student";
 
-title.innerText = localStorage.postTitle || title.innerText;
-deadline.value = localStorage.deadline || "";
-submit.checked = localStorage.submit === "true";
+function login(){
+  const n=document.getElementById("loginNum").value;
+  if(n<1||n>24){
+    alert("학번은 1~24만 가능");
+    return;
+  }
+  localStorage.setItem(LOGIN_KEY,n);
+  init();
+}
 
-title.oninput = () => localStorage.postTitle = title.innerText;
-deadline.onchange = () => localStorage.deadline = deadline.value;
-submit.onchange = () => localStorage.submit = submit.checked;
+function logout(){
+  localStorage.removeItem(LOGIN_KEY);
+  location.reload();
+}
+
+function init(){
+  const user=localStorage.getItem(LOGIN_KEY);
+  if(user){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("menu").classList.remove("hidden");
+    document.getElementById("userArea").innerHTML=
+      `${user}번 로그인 <button onclick="logout()">로그아웃</button>`;
+  }
+}
+init();
 </script>
 
 </body>
