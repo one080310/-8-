@@ -4,87 +4,91 @@
 <meta charset="UTF-8">
 <title>과제 공지</title>
 <link rel="stylesheet" href="./common.css">
+<style>
+.notice {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+button {
+  padding:6px 14px;
+  border:none;
+  border-radius:6px;
+  background:#4a5bdc;
+  color:white;
+}
+button:disabled { background:#ccc; }
+</style>
 </head>
 <body>
 
 <h2>📢 과제 공지</h2>
 <a href="index.html">← 홈</a>
 
+<!-- 선생님 전용 -->
+<div id="teacherBox"></div>
+
 <div id="workArea"></div>
 
 <script>
-const LOGIN_KEY="login_student";
+const ROLE=localStorage.getItem("role");
+const USER=localStorage.getItem("user");
+if(!ROLE) location.href="index.html";
 
-const works=[
-  {
-    id:"math",
-    title:"수학 수행평가",
-    content:"함수 단원 문제 풀이",
-    deadline:"2025-12-25"
-  },
-  {
-    id:"science",
-    title:"과학 자기평가서",
-    content:"학기 자기평가 작성",
-    deadline:"2025-12-27"
-  }
-];
+let works=JSON.parse(localStorage.getItem("works"))||[];
 
-function render(){
-  const user=localStorage.getItem(LOGIN_KEY);
-  if(!user){
-    alert("로그인 필요");
-    location.href="index.html";
-    return;
-  }
-
-  const area=document.getElementById("workArea");
-  area.innerHTML="";
-
-  works.forEach(w=>{
-    const key="submit_"+w.id;
-    let list=JSON.parse(localStorage.getItem(key))||[];
-    const today=new Date().toISOString().slice(0,10);
-    const closed=today>w.deadline;
-
-    const submitted=list.includes(user);
-
-    area.innerHTML+=`
-      <div class="notice">
-        <h3>${w.title}</h3>
-        <p>${w.content}</p>
-        <p>마감: ${w.deadline}</p>
-        <p>제출 현황: ${list.length}/24</p>
-
-        <button 
-          onclick="submit('${w.id}')"
-          ${submitted||closed?"disabled":""}>
-          ${closed?"마감됨":submitted?"제출 완료":"제출"}
-        </button>
-
-        <details>
-          <summary>제출자 보기 (선생님)</summary>
-          ${list.map(n=>n+"번").join(", ")||"없음"}
-        </details>
-      </div>
-    `;
-  });
+function addWork(){
+  const t=title.value;
+  const c=content.value;
+  const d=deadline.value;
+  works.push({id:Date.now(),title:t,content:c,deadline:d});
+  localStorage.setItem("works",JSON.stringify(works));
+  render();
 }
 
 function submit(id){
-  const user=localStorage.getItem(LOGIN_KEY);
   const key="submit_"+id;
   let list=JSON.parse(localStorage.getItem(key))||[];
-
-  if(!list.includes(user)){
-    list.push(user);
+  if(!list.includes(USER)){
+    list.push(USER);
     localStorage.setItem(key,JSON.stringify(list));
     render();
   }
 }
 
-render();
-</script>
+function render(){
+  workArea.innerHTML="";
+  teacherBox.innerHTML="";
 
-</body>
-</html>
+  if(ROLE==="teacher"){
+    teacherBox.innerHTML=`
+      <h3>과제 추가</h3>
+      <input id="title" placeholder="제목">
+      <input id="content" placeholder="내용">
+      <input id="deadline" type="date">
+      <button onclick="addWork()">추가</button><hr>
+    `;
+  }
+
+  works.forEach(w=>{
+    const key="submit_"+w.id;
+    let list=JSON.parse(localStorage.getItem(key))||[];
+    const submitted=list.includes(USER);
+    const closed=new Date().toISOString().slice(0,10)>w.deadline;
+
+    workArea.innerHTML+=`
+      <div class="notice">
+        <h3>${w.title}</h3>
+        <p>${w.content}</p>
+        <p>마감: ${w.deadline}</p>
+        <p>제출: ${list.length}/24</p>
+
+        ${ROLE==="student" ? `
+          <button onclick="submit(${w.id})"
+            ${submitted||closed?"disabled":""}>
+            ${submitted?"제출 완료":closed?"마감":"제출"}
+          </button>` : `
+          <details>
+            <summary>제출자 명단</summary>
+            ${list.map(n=>n+
