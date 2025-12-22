@@ -2,36 +2,22 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>숙제 알리미</title>
-
+  <title>과제 알림</title>
   <link rel="stylesheet" href="./common.css">
   <link rel="stylesheet" href="./layout.css">
-  <link rel="stylesheet" href="./work_alert.css">
-
-  <script src="./work_alert.js" defer></script>
 </head>
 <body>
 
-<header class="header">
-  <h1>숙제 알리미</h1>
-</header>
+<h2> 과제 알림</h2>
 
-<nav class="nav-tabs">
-  <a class="active" href="work_alert.html">숙제</a>
-  <a href="todo_list.html">완료 체크</a>
-</nav>
+<div class="alert urgent">
+ 12/nn 수학 수행평가 (제출현황이나왓으면)
+</div>
 
-<main class="content">
-  <div class="homework">
-    <input type="checkbox">
-    <span>수학 수행평가</span>
-  </div>
+<div class="alert warning">
+  마찬가지
+</div>
 
-  <div class="homework">
-    <input type="checkbox">
-    <span>과학 자기평가서</span>
-  </div>
-</main>
-
+<script src="./work_alert.js"></script>
 </body>
 </html>
