@@ -176,11 +176,6 @@ const ROLE = localStorage.getItem("role");
 const USER = localStorage.getItem("user");
 const CLASS = localStorage.getItem("class");
 
-if (!ROLE) {
-  alert("로그인이 필요합니다.");
-  location.href = "index.html";
-}
-
 let works = JSON.parse(localStorage.getItem("works")) || [];
 
 function addWork() {
