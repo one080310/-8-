@@ -348,6 +348,16 @@ function getDeadlineStatus(deadline) {
 }
 
 // =========================
+// 교사용 필터 값 읽기
+// =========================
+function getTeacherFilter() {
+  const grade = document.getElementById("filterGrade")?.value || "all";
+  const classNum = document.getElementById("filterClass")?.value || "all";
+
+  return { grade, classNum };
+}
+
+// =========================
 // 화면 렌더링
 // =========================
 function render() {
@@ -396,12 +406,22 @@ function render() {
     `;
   }
 
-  const myWorks = ROLE === "teacher"
-    ? works
-    : works.filter(w =>
-        w.grade === Number(loginData.grade) &&
-        w.class === CLASS
-      );
+  let myWorks;
+
+if (ROLE === "teacher") {
+  const { grade, classNum } = getTeacherFilter();
+
+  myWorks = works.filter(w => {
+    if (grade !== "all" && w.grade !== Number(grade)) return false;
+    if (classNum !== "all" && w.class !== Number(classNum)) return false;
+    return true;
+  });
+} else {
+  myWorks = works.filter(w =>
+    w.grade === Number(loginData.grade) &&
+    w.class === CLASS
+  );
+}
 
 
   if (myWorks.length === 0) {
