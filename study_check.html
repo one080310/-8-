@@ -152,6 +152,7 @@ function toggleCheck(s,c){
 function render(){
   const data=getData();
   tableBody.innerHTML="";
+
   data.forEach((stu,s)=>{
     const tr=document.createElement("tr");
     tr.innerHTML=`<td>${stu.number}</td>`;
@@ -160,13 +161,16 @@ function render(){
       const cb=document.createElement("input");
       cb.type="checkbox";
       cb.checked=chk;
-      cb.onchange=()=>toggleCheck(s,c);
+      cb.onchange=()=>{ toggleCheck(s,c); renderStats(); };
       td.appendChild(cb);
       tr.appendChild(td);
     });
     tableBody.appendChild(tr);
   });
+
+  renderStats();
 }
+
 function renderStats(){
   const data = getData();
   const statsDiv = document.getElementById("stats");
