@@ -1,4 +1,3 @@
-/*선생님 아이디 비번 : teacher/1234*/
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,7 +10,6 @@ body {
   padding:40px;
   text-align:center;
 }
-
 .box {
   background:white;
   max-width:400px;
@@ -20,14 +18,12 @@ body {
   border-radius:16px;
   box-shadow:0 10px 25px rgba(0,0,0,0.08);
 }
-
-input {
+input, select {
   width:90%;
   padding:12px;
   font-size:16px;
   margin:10px 0;
 }
-
 button {
   padding:10px 24px;
   font-size:16px;
@@ -37,13 +33,6 @@ button {
   color:white;
   cursor:pointer;
 }
-
-select {
-  padding:8px;
-  font-size:14px;
-  margin-bottom:10px;
-}
-
 .menu a {
   display:block;
   margin:14px 0;
@@ -51,7 +40,6 @@ select {
   color:#4a5bdc;
   text-decoration:none;
 }
-
 .error { color:red; margin-top:10px; }
 </style>
 </head>
@@ -65,12 +53,10 @@ select {
     <option value="teacher">선생님</option>
   </select>
 
-  <!-- 학생 -->
   <div id="studentLogin">
     <input id="studentCode" placeholder="학번 (예: 20101)">
   </div>
 
-  <!-- 선생님 -->
   <div id="teacherLogin" style="display:none;">
     <input id="teacherId" placeholder="아이디">
     <input id="teacherPw" type="password" placeholder="비밀번호">
@@ -82,9 +68,7 @@ select {
 
 <div class="box" id="mainBox" style="display:none;">
   <h2 id="welcome"></h2>
-
   <div class="menu" id="menu"></div>
-
   <button onclick="logout()">로그아웃</button>
 </div>
 
@@ -95,53 +79,47 @@ const teacherBox=document.getElementById("teacherLogin");
 const msg=document.getElementById("msg");
 
 typeSelect.onchange=()=>{
-  studentBox.style.display= typeSelect.value==="student"?"block":"none";
-  teacherBox.style.display= typeSelect.value==="teacher"?"block":"none";
+  studentBox.style.display=typeSelect.value==="student"?"block":"none";
+  teacherBox.style.display=typeSelect.value==="teacher"?"block":"none";
 };
 
-/* 로그인 */
 function login(){
   msg.innerText="";
 
   if(typeSelect.value==="student"){
     const code=document.getElementById("studentCode").value;
-    if(code.length!==5){ msg.innerText="학번 5자리"; return; }
+    if(!/^\d{5}$/.test(code)){ msg.innerText="학번 5자리"; return; }
 
-    const grade=code[0];
-    const classNum=code.slice(1,3);
-    const number=code.slice(3,5);
+    const grade=parseInt(code[0]);
+    const classNum=parseInt(code.slice(1,3));
+    const number=parseInt(code.slice(3,5));
 
     if(classNum<1||classNum>7||number<1||number>24){
       msg.innerText="학번 형식 오류"; return;
     }
 
     localStorage.setItem("loginUser",JSON.stringify({
-      role:"student",grade,classNum,number,code
+      role:"student", code, grade, classNum, number
     }));
-
   } else {
-    const id=document.getElementById("teacherId").value;
-    const pw=document.getElementById("teacherPw").value;
-
-    if(id!=="teacher"||pw!=="1234"){
+    if(
+      document.getElementById("teacherId").value!=="teacher" ||
+      document.getElementById("teacherPw").value!=="1234"
+    ){
       msg.innerText="선생님 계정 오류"; return;
     }
-
     localStorage.setItem("loginUser",JSON.stringify({
-      role:"teacher",name:"담당교사"
+      role:"teacher"
     }));
   }
-
   showMain();
 }
 
-/* 로그아웃 */
 function logout(){
   localStorage.removeItem("loginUser");
   location.reload();
 }
 
-/* 상태 */
 function showMain(){
   const data=localStorage.getItem("loginUser");
   if(!data) return;
@@ -154,92 +132,28 @@ function showMain(){
   menu.innerHTML="";
 
   if(user.role==="student"){
-    document.getElementById("welcome").innerText=
+    document.getElementById("welcome").innerText =
       `${user.grade}학년 ${user.classNum}반 ${user.number}번`;
-    menu.innerHTML+=`
+    menu.innerHTML=`
+      <a href="student_dashboard.html">📊 내 요약</a>
       <a href="todo_list.html">📝 투두리스트</a>
       <a href="study_check.html">📘 자습 체크</a>
       <a href="work_alert.html">📢 과제 알림</a>
-      <a href="event_alert.html">📅 학교 행사 관리</a>
+      <a href="event_alert.html">📅 학교 행사 확인</a>
     `;
   } else {
-    document.getElementById("welcome").innerText="👩‍🏫 선생님 로그인";
-    menu.innerHTML+=`
-      <a href="todo_list.html">📝 반별 투두리스트</a>
-      <a href="study_check.html">📘 자습 체크 관리</a>
-      <a href="work_alert.html">📢 과제 공지 관리</a>
+    document.getElementById("welcome").innerText="👩‍🏫 선생님";
+    menu.innerHTML=`
+       <a href="todo_list.html">📝 투두리스트</a> 
+      <a href="study_check.html">📘 자습 관리</a>
+      <a href="work_alert.html">📢 과제 공지</a>
       <a href="event_alert.html">📅 학교 행사 관리</a>
+      <a href="teacher_log.html">📝 지도 로그</a>
+      
     `;
   }
 }
-
 showMain();
 </script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>학생 개인 요약</title>
-<style>
-body { font-family: Segoe UI, sans-serif; background:#f5f7fb; padding:20px }
-.card { background:white; padding:20px; border-radius:12px; margin-bottom:20px }
-h2 { margin-bottom:10px }
-.bad { color:#d9534f }
-.good { color:#4a5bdc }
-</style>
-</head>
-<body>
-
-<h2>📊 나의 학습 요약</h2>
-<a href="index.html">← 홈</a>
-
-<div class="card" id="info"></div>
-<div class="card" id="study"></div>
-<div class="card" id="todo"></div>
-
-<script>
-/* 로그인 정보 */
-const studentId = localStorage.getItem("loginStudent");
-if(!studentId){
-  alert("로그인이 필요합니다");
-  location.href="index.html";
-}
-
-/* 학번 파싱 */
-const grade = studentId[0];
-const cls = studentId[1];
-const number = parseInt(studentId.slice(3));
-
-document.getElementById("info").innerHTML =
-`<b>학번:</b> ${studentId} <br>
- <b>반:</b> ${cls}반 / <b>번호:</b> ${number}`;
-
-/* 자습 참석률 */
-const studyData = JSON.parse(localStorage.getItem("study_"+cls+"반")) || [];
-const me = studyData[number-1];
-
-let total = me.checks.length;
-let attended = me.checks.filter(v=>v).length;
-let percent = Math.round(attended/total*100);
-
-document.getElementById("study").innerHTML = `
-<h3>자습 참석률</h3>
-<p class="${percent>=70?'good':'bad'}">${percent}%</p>
-<p>결석 교시: ${
-  me.checks.map((v,i)=>!v?i+1:null).filter(v=>v).join(", ") || "없음"
-}</p>`;
-
-/* 투두리스트 */
-const todos = JSON.parse(localStorage.getItem("todo_"+studentId)) || [];
-const done = todos.filter(t=>t.done).length;
-
-document.getElementById("todo").innerHTML = `
-<h3>투두리스트</h3>
-<p>${done} / ${todos.length} 완료</p>`;
-</script>
-
 </body>
 </html>
