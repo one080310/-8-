@@ -3,76 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <title>과제 공지</title>
-<link rel="stylesheet" href="./common.css">
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f5f7fb;
+  padding: 20px;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: #4a5bdc;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+/* 선생님 과제 추가 영역 */
+#teacherBox {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+#teacherBox h3 {
+  color: #4a5bdc;
+  margin-bottom: 15px;
+}
+
+#teacherBox input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+#teacherBox button {
+  padding: 10px 20px;
+  background: #4a5bdc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#teacherBox button:hover {
+  background: #3849c7;
+}
+
+/* 과제 카드 */
+.notice {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border-left: 5px solid #4a5bdc;
+}
+
+.notice h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.notice p {
+  color: #666;
+  margin: 5px 0;
+  line-height: 1.6;
+}
+
+.notice .deadline {
+  color: #ff5252;
+  font-weight: 600;
+}
+
+.notice .submit-count {
+  color: #4a5bdc;
+  font-weight: 600;
+}
+
+.notice button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #4a5bdc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.notice button:hover {
+  background: #3849c7;
+}
+
+.notice button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.notice details {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 5px;
+}
+
+.notice summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #4a5bdc;
+}
+
+.notice .student-list {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.notice .student-list div {
+  padding: 3px 0;
+  color: #666;
+}
+
+.delete-btn {
+  background: #ff6b6b !important;
+  margin-left: 10px;
+}
+
+.delete-btn:hover {
+  background: #ff5252 !important;
+}
+</style>
 </head>
 <body>
 
 <h2>📢 과제 공지</h2>
-<a href="index.html">← 홈</a>
+<a href="index.html">← 홈으로</a>
 
-<!-- 선생님 전용 -->
+<!-- 선생님 전용 과제 추가 영역 -->
 <div id="teacherBox"></div>
 
+<!-- 과제 목록 -->
 <div id="workArea"></div>
 
 <script>
-const ROLE=localStorage.getItem("role");
-const USER=localStorage.getItem("user");
-if(!ROLE) location.href="index.html";
+/* === 사용자 정보 가져오기 === */
+const loginUser = JSON.parse(localStorage.getItem("loginUser"));
 
-let works=JSON.parse(localStorage.getItem("works"))||[];
+// 로그인 안 했으면 홈으로 이동
+if(!loginUser) {
+  alert("로그인이 필요합니다!");
+  location.href = "index.html";
+}
 
+const ROLE = loginUser.role; // "student" 또는 "teacher"
+const USER = loginUser.code || loginUser.name; // 학생: 학번, 선생님: 이름
+
+/* === 과제 목록 가져오기 === */
+let works = JSON.parse(localStorage.getItem("works")) || [];
+
+/* === 과제 추가 (선생님만 가능) === */
 function addWork(){
-  const t=title.value;
-  const c=content.value;
-  const d=deadline.value;
-  works.push({id:Date.now(),title:t,content:c,deadline:d});
-  localStorage.setItem("works",JSON.stringify(works));
+  const title = document.getElementById("title").value.trim();
+  const content = document.getElementById("content").value.trim();
+  const deadline = document.getElementById("deadline").value;
+  
+  if(!title || !content || !deadline){
+    alert("제목, 내용, 마감일을 모두 입력해주세요!");
+    return;
+  }
+  
+  // 새 과제 추가
+  works.push({
+    id: Date.now(),
+    title: title,
+    content: content,
+    deadline: deadline
+  });
+  
+  localStorage.setItem("works", JSON.stringify(works));
+  
+  // 입력창 초기화
+  document.getElementById("title").value = "";
+  document.getElementById("content").value = "";
+  document.getElementById("deadline").value = "";
+  
   render();
 }
 
-function submit(id){
-  const key="submit_"+id;
-  let list=JSON.parse(localStorage.getItem(key))||[];
-  if(!list.includes(USER)){
-    list.push(USER);
-    localStorage.setItem(key,JSON.stringify(list));
+/* === 과제 삭제 (선생님만 가능) === */
+function deleteWork(id){
+  if(confirm("이 과제를 삭제하시겠습니까?")){
+    works = works.filter(w => w.id !== id);
+    localStorage.setItem("works", JSON.stringify(works));
+    
+    // 제출 기록도 삭제
+    localStorage.removeItem("submit_" + id);
+    
     render();
   }
 }
 
-function render(){
-  workArea.innerHTML="";
-  teacherBox.innerHTML="";
+/* === 과제 제출 (학생만 가능) === */
+function submit(id){
+  const key = "submit_" + id;
+  let list = JSON.parse(localStorage.getItem(key)) || [];
+  
+  if(!list.includes(USER)){
+    list.push(USER);
+    localStorage.setItem(key, JSON.stringify(list));
+    alert("과제를 제출했습니다!");
+    render();
+  }
+}
 
-  if(ROLE==="teacher"){
-    teacherBox.innerHTML=`
-      <h3>과제 추가</h3>
-      <input id="title" placeholder="제목">
-      <input id="content" placeholder="내용">
+/* === 화면 렌더링 === */
+function render(){
+  const teacherBox = document.getElementById("teacherBox");
+  const workArea = document.getElementById("workArea");
+  
+  teacherBox.innerHTML = "";
+  workArea.innerHTML = "";
+  
+  // 선생님이면 과제 추가 영역 표시
+  if(ROLE === "teacher"){
+    teacherBox.innerHTML = `
+      <h3>✏️ 과제 추가</h3>
+      <input id="title" type="text" placeholder="과제 제목">
+      <input id="content" type="text" placeholder="과제 내용">
       <input id="deadline" type="date">
-      <button onclick="addWork()">추가</button><hr>
+      <button onclick="addWork()">과제 추가</button>
     `;
   }
+  
+  // 과제 목록 표시
+  if(works.length === 0){
+    workArea.innerHTML = `
+      <div style="text-align:center; padding:40px; color:#999;">
+        등록된 과제가 없습니다.
+      </div>
+    `;
+    return;
+  }
+  
+  works.forEach(w => {
+    const key = "submit_" + w.id;
+    let list = JSON.parse(localStorage.getItem(key)) || [];
+    const submitted = list.includes(USER); // 내가 제출했는지
+    const today = new Date().toISOString().slice(0,10);
+    const closed = today > w.deadline; // 마감 지났는지
+    
+    const noticeDiv = document.createElement("div");
+    noticeDiv.className = "notice";
+    
+    let html = `
+      <h3>${w.title}</h3>
+      <p>${w.content}</p>
+      <p class="deadline">📅 마감: ${w.deadline} ${closed ? "(마감됨)" : ""}</p>
+      <p class="submit-count">📝 제출: ${list.length}/24명</p>
+    `;
+    
+    // 학생이면 제출 버튼
+    if(ROLE === "student"){
+      html += `
+        <button onclick="submit(${w.id})" ${submitted || closed ? "disabled" : ""}>
+          ${submitted ? "✅ 제출 완료" : closed ? "❌ 마감됨" : "📤 제출하기"}
+        </button>
+      `;
+    }
+    
+    // 선생님이면 제출자 명단 + 삭제 버튼
+    if(ROLE === "teacher"){
+      html += `
+        <details>
+          <summary>👥 제출자 명단 (${list.length}명)</summary>
+          <div class="student-list">
+      `;
+      
+      if(list.length === 0){
+        html += `<div style="color:#999;">아직 제출한 학생이 없습니다.</div>`;
+      } else {
+        list.forEach(student => {
+          html += `<div>✓ ${student}</div>`;
+        });
+      }
+      
+      html += `
+          </div>
+        </details>
+        <button class="delete-btn" onclick="deleteWork(${w.id})">🗑️ 삭제</button>
+      `;
+    }
+    
+    noticeDiv.innerHTML = html;
+    workArea.appendChild(noticeDiv);
+  });
+}
 
-  works.forEach(w=>{
-    const key="submit_"+w.id;
-    let list=JSON.parse(localStorage.getItem(key))||[];
-    const submitted=list.includes(USER);
-    const closed=new Date().toISOString().slice(0,10)>w.deadline;
+/* === 초기 렌더링 === */
+render();
+</script>
 
-    workArea.innerHTML+=`
-      <div class="notice">
-        <h3>${w.title}</h3>
-        <p>${w.content}</p>
-        <p>마감: ${w.deadline}</p>
-        <p>제출: ${list.length}/24</p>
-
-        ${ROLE==="student" ? `
-          <button onclick="submit(${w.id})"
-            ${submitted||closed?"disabled":""}>
-            ${submitted?"제출 완료":closed?"마감":"제출"}
-          </button>` : `
-          <details>
-            <summary>제출자 명단</summary>
-            ${list.map(n=>n+
+</body>
+</html>
