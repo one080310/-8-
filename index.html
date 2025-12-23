@@ -178,3 +178,68 @@ showMain();
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>학생 개인 요약</title>
+<style>
+body { font-family: Segoe UI, sans-serif; background:#f5f7fb; padding:20px }
+.card { background:white; padding:20px; border-radius:12px; margin-bottom:20px }
+h2 { margin-bottom:10px }
+.bad { color:#d9534f }
+.good { color:#4a5bdc }
+</style>
+</head>
+<body>
+
+<h2>📊 나의 학습 요약</h2>
+<a href="index.html">← 홈</a>
+
+<div class="card" id="info"></div>
+<div class="card" id="study"></div>
+<div class="card" id="todo"></div>
+
+<script>
+/* 로그인 정보 */
+const studentId = localStorage.getItem("loginStudent");
+if(!studentId){
+  alert("로그인이 필요합니다");
+  location.href="index.html";
+}
+
+/* 학번 파싱 */
+const grade = studentId[0];
+const cls = studentId[1];
+const number = parseInt(studentId.slice(3));
+
+document.getElementById("info").innerHTML =
+`<b>학번:</b> ${studentId} <br>
+ <b>반:</b> ${cls}반 / <b>번호:</b> ${number}`;
+
+/* 자습 참석률 */
+const studyData = JSON.parse(localStorage.getItem("study_"+cls+"반")) || [];
+const me = studyData[number-1];
+
+let total = me.checks.length;
+let attended = me.checks.filter(v=>v).length;
+let percent = Math.round(attended/total*100);
+
+document.getElementById("study").innerHTML = `
+<h3>자습 참석률</h3>
+<p class="${percent>=70?'good':'bad'}">${percent}%</p>
+<p>결석 교시: ${
+  me.checks.map((v,i)=>!v?i+1:null).filter(v=>v).join(", ") || "없음"
+}</p>`;
+
+/* 투두리스트 */
+const todos = JSON.parse(localStorage.getItem("todo_"+studentId)) || [];
+const done = todos.filter(t=>t.done).length;
+
+document.getElementById("todo").innerHTML = `
+<h3>투두리스트</h3>
+<p>${done} / ${todos.length} 완료</p>`;
+</script>
+
+</body>
+</html>
