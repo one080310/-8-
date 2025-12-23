@@ -2,77 +2,340 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>과제 공지</title>
 <link rel="stylesheet" href="./common.css">
+<style>
+  body {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  #teacherBox {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  #teacherBox h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  #teacherBox input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  #teacherBox button {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  #teacherBox button:hover {
+    background: #45a049;
+  }
+  
+  .notice {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .notice h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .notice p {
+    margin: 8px 0;
+    color: #666;
+  }
+  
+  .notice button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .notice button:not(:disabled) {
+    background: #667eea;
+    color: white;
+  }
+  
+  .notice button:not(:disabled):hover {
+    background: #5568d3;
+  }
+  
+  .notice button:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+  }
+  
+  .delete-btn {
+    background: #ff6b6b !important;
+    color: white !important;
+    margin-left: 10px;
+  }
+  
+  .delete-btn:hover {
+    background: #fa5252 !important;
+  }
+  
+  details {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  summary {
+    cursor: pointer;
+    font-weight: bold;
+    color: #667eea;
+  }
+  
+  .submitter-list {
+    margin-top: 10px;
+    padding-left: 20px;
+  }
+  
+  .deadline-passed {
+    border-left-color: #ff6b6b;
+  }
+  
+  .deadline-soon {
+    border-left-color: #ffa500;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+  
+  .badge-completed {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  
+  .badge-closed {
+    background: #f8d7da;
+    color: #721c24;
+  }
+</style>
 </head>
 <body>
-
-<h2>📢 과제 공지</h2>
-<a href="index.html">← 홈</a>
+<div class="header">
+  <h2>📢 과제 공지</h2>
+  <a href="index.html">← 홈</a>
+</div>
 
 <!-- 선생님 전용 -->
 <div id="teacherBox"></div>
-
 <div id="workArea"></div>
 
 <script>
-const ROLE=localStorage.getItem("role");
-const USER=localStorage.getItem("user");
-if(!ROLE) location.href="index.html";
+const ROLE = localStorage.getItem("role");
+const USER = localStorage.getItem("user");
+const CLASS = localStorage.getItem("class");
 
-let works=JSON.parse(localStorage.getItem("works"))||[];
+if (!ROLE) {
+  alert("로그인이 필요합니다.");
+  location.href = "index.html";
+}
 
-function addWork(){
-  const t=title.value;
-  const c=content.value;
-  const d=deadline.value;
-  works.push({id:Date.now(),title:t,content:c,deadline:d});
-  localStorage.setItem("works",JSON.stringify(works));
+let works = JSON.parse(localStorage.getItem("works")) || [];
+
+function addWork() {
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
+  const deadline = document.getElementById("deadline").value;
+  const targetClass = document.getElementById("targetClass").value;
+  
+  if (!title || !content || !deadline) {
+    alert("모든 항목을 입력해주세요.");
+    return;
+  }
+  
+  works.push({
+    id: Date.now(),
+    title: title,
+    content: content,
+    deadline: deadline,
+    class: targetClass,
+    createdBy: USER
+  });
+  
+  localStorage.setItem("works", JSON.stringify(works));
+  
+  // 입력 필드 초기화
+  document.getElementById("title").value = "";
+  document.getElementById("content").value = "";
+  document.getElementById("deadline").value = "";
+  
   render();
 }
 
-function submit(id){
-  const key="submit_"+id;
-  let list=JSON.parse(localStorage.getItem(key))||[];
-  if(!list.includes(USER)){
-    list.push(USER);
-    localStorage.setItem(key,JSON.stringify(list));
+function deleteWork(id) {
+  if (confirm("정말 이 과제를 삭제하시겠습니까?")) {
+    works = works.filter(w => w.id !== id);
+    localStorage.setItem("works", JSON.stringify(works));
+    // 제출 데이터도 삭제
+    localStorage.removeItem("submit_" + id);
     render();
   }
 }
 
-function render(){
-  workArea.innerHTML="";
-  teacherBox.innerHTML="";
+function submit(id) {
+  const key = "submit_" + id;
+  let list = JSON.parse(localStorage.getItem(key)) || [];
+  
+  if (!list.includes(USER)) {
+    list.push(USER);
+    localStorage.setItem(key, JSON.stringify(list));
+    alert("과제가 제출되었습니다!");
+    render();
+  }
+}
 
-  if(ROLE==="teacher"){
-    teacherBox.innerHTML=`
-      <h3>과제 추가</h3>
-      <input id="title" placeholder="제목">
-      <input id="content" placeholder="내용">
+function getDeadlineStatus(deadline) {
+  const today = new Date().toISOString().slice(0, 10);
+  const deadlineDate = new Date(deadline);
+  const todayDate = new Date(today);
+  const diffDays = Math.ceil((deadlineDate - todayDate) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return "passed";
+  if (diffDays <= 2) return "soon";
+  return "normal";
+}
+
+function render() {
+  const workArea = document.getElementById("workArea");
+  const teacherBox = document.getElementById("teacherBox");
+  
+  workArea.innerHTML = "";
+  teacherBox.innerHTML = "";
+  
+  // 선생님 UI
+  if (ROLE === "teacher") {
+    teacherBox.innerHTML = `
+      <h3>📝 과제 추가</h3>
+      <input id="title" placeholder="과제 제목 (예: 수학 문제집 p.45-50)">
+      <input id="content" placeholder="과제 내용 및 설명">
       <input id="deadline" type="date">
-      <button onclick="addWork()">추가</button><hr>
+      <select id="targetClass">
+        <option value="1">1반</option>
+        <option value="2">2반</option>
+        <option value="3">3반</option>
+        <option value="4">4반</option>
+      </select>
+      <button onclick="addWork()">과제 추가</button>
     `;
   }
-
-  works.forEach(w=>{
-    const key="submit_"+w.id;
-    let list=JSON.parse(localStorage.getItem(key))||[];
-    const submitted=list.includes(USER);
-    const closed=new Date().toISOString().slice(0,10)>w.deadline;
-
-    workArea.innerHTML+=`
+  
+  // 내 반 과제만 필터링
+  const myWorks = ROLE === "teacher" 
+    ? works 
+    : works.filter(w => w.class === CLASS);
+  
+  if (myWorks.length === 0) {
+    workArea.innerHTML = `
       <div class="notice">
-        <h3>${w.title}</h3>
+        <p style="text-align: center; color: #999;">등록된 과제가 없습니다.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  myWorks.forEach(w => {
+    const key = "submit_" + w.id;
+    let list = JSON.parse(localStorage.getItem(key)) || [];
+    const submitted = list.includes(USER);
+    const today = new Date().toISOString().slice(0, 10);
+    const closed = today > w.deadline;
+    const deadlineStatus = getDeadlineStatus(w.deadline);
+    
+    let statusClass = "";
+    if (deadlineStatus === "passed") statusClass = "deadline-passed";
+    else if (deadlineStatus === "soon") statusClass = "deadline-soon";
+    
+    let badge = "";
+    if (ROLE === "student") {
+      if (submitted) {
+        badge = '<span class="status-badge badge-completed">✅ 제출 완료</span>';
+      } else if (closed) {
+        badge = '<span class="status-badge badge-closed">❌ 마감</span>';
+      } else {
+        badge = '<span class="status-badge badge-pending">⏳ 미제출</span>';
+      }
+    }
+    
+    const classInfo = ROLE === "teacher" ? `<p>대상: ${w.class}반</p>` : "";
+    
+    workArea.innerHTML += `
+      <div class="notice ${statusClass}">
+        <h3>${w.title}${badge}</h3>
+        ${classInfo}
         <p>${w.content}</p>
-        <p>마감: ${w.deadline}</p>
-        <p>제출: ${list.length}/24</p>
-
-        ${ROLE==="student" ? `
+        <p>📅 마감: ${w.deadline}${closed ? " (마감됨)" : ""}</p>
+        <p>📊 제출: ${list.length}명</p>
+        ${ROLE === "student" ? `
           <button onclick="submit(${w.id})"
-            ${submitted||closed?"disabled":""}>
-            ${submitted?"제출 완료":closed?"마감":"제출"}
-          </button>` : `
+            ${submitted || closed ? "disabled" : ""}>
+            ${submitted ? "제출 완료" : closed ? "마감됨" : "제출하기"}
+          </button>
+        ` : `
           <details>
-            <summary>제출자 명단</summary>
-            ${list.map(n=>n+
+            <summary>제출자 명단 보기 (${list.length}명)</summary>
+            <div class="submitter-list">
+              ${list.length > 0 ? list.map(n => `<p>✓ ${n}</p>`).join("") : "<p>아직 제출자가 없습니다.</p>"}
+            </div>
+          </details>
+          <button class="delete-btn" onclick="deleteWork(${w.id})">삭제</button>
+        `}
+      </div>
+    `;
+  });
+}
+
+render();
+</script>
+</body>
+</html>
