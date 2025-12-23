@@ -278,6 +278,7 @@ function addWork() {
       title,
       content,
       deadline,
+      grade: Number(loginData.grade), // ← 추가
       class: targetClass,
       createdBy: USER
     });
@@ -380,7 +381,11 @@ function render() {
 
   const myWorks = ROLE === "teacher"
     ? works
-    : works.filter(w => w.class === CLASS);
+    : works.filter(w =>
+        w.grade === Number(loginData.grade) &&
+        w.class === CLASS
+      );
+
 
   if (myWorks.length === 0) {
     workArea.innerHTML = `
