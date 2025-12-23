@@ -275,7 +275,7 @@ function render() {
   // 내 반 과제만 필터링
   const myWorks = ROLE === "teacher" 
     ? works 
-    : works.filter(w => w.class === CLASS);
+    : works.filter(w => String(w.class) === String(parseInt(CLASS)));
   
   if (myWorks.length === 0) {
     workArea.innerHTML = `
