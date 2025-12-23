@@ -42,6 +42,16 @@ a {
   background: #4a5bdc;
   color: white;
 }
+<!-- 주차 선택 -->
+<div style="margin-bottom:15px;">
+  <strong>주차 선택:</strong>
+  <select id="weekSelect" onchange="changeWeek()">
+    <option value="1주차">1주차</option>
+    <option value="2주차">2주차</option>
+    <option value="3주차">3주차</option>
+    <option value="4주차">4주차</option>
+  </select>
+</div>
 
 /* 통계 영역 */
 #stats {
@@ -124,6 +134,7 @@ td:first-child {
 
 <script>
 /* === 전역 변수 === */
+let currentWeek = "1주차";
 let currentClass = "1반"; // 현재 선택된 반
 const tableBody = document.getElementById("tableBody");
 const classButtons = document.getElementById("classButtons");
@@ -146,29 +157,37 @@ function switchClass(cls, btn){
   render();
   renderStats();
 }
+function changeWeek(){
+  const sel = document.getElementById("weekSelect");
+  currentWeek = sel.value;
+  render();
+}
 
 /* === 데이터 가져오기 === */
 function getData(){
-  let data = JSON.parse(localStorage.getItem("study_"+currentClass));
+  const key = "study_"+currentClass+"_"+currentWeek;
+  let data = JSON.parse(localStorage.getItem(key));
+
   if(!data){
-    data = [];
-    for(let i=1; i<=24; i++){
-      data.push({ 
-        number: i, 
-        checks: Array(15).fill(false) // 15개 체크박스 초기화
+    data=[];
+    for(let i=1;i<=24;i++){
+      data.push({
+        number:i,
+        checks:Array(15).fill(false)
       });
     }
-    localStorage.setItem("study_"+currentClass, JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(data));
   }
   return data;
 }
 
+
 /* === 체크박스 토글 === */
-function toggleCheck(s, c){
-  const data = getData();
-  data[s].checks[c] = !data[s].checks[c]; // 체크 상태 반전
-  localStorage.setItem("study_"+currentClass, JSON.stringify(data));
-  renderStats(); // 통계 업데이트
+function toggleCheck(s,c){
+  const key = "study_"+currentClass+"_"+currentWeek;
+  const data=getData();
+  data[s].checks[c]=!data[s].checks[c];
+  localStorage.setItem(key, JSON.stringify(data));
 }
 
 /* === 테이블 렌더링 === */
