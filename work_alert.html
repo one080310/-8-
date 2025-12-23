@@ -361,6 +361,23 @@ function render() {
   if (ROLE === "teacher") {
     teacherBox.innerHTML = `
       <h3>📝 과제 추가</h3>
+      <!-- 🔍 과제 필터 -->
+      <div style="margin-bottom:15px;">
+        <select id="filterGrade">
+          <option value="all">전체 학년</option>
+          <option value="1">1학년</option>
+          <option value="2">2학년</option>
+          <option value="3">3학년</option>
+        </select>
+
+        <select id="filterClass">
+          <option value="all">전체 반</option>
+          ${[1,2,3,4,5,6,7].map(n => `<option value="${n}">${n}반</option>`).join("")}
+      </select>
+
+        <button onclick="render()">필터 적용</button>
+    </div>
+    
       <input id="title" placeholder="과제 제목">
       <input id="content" placeholder="과제 내용">
       <input id="deadline" type="date">
