@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>학생 개인 요약</title>
+<style>
+body { font-family:Segoe UI,sans-serif;background:#f5f7fb;padding:20px }
+.card { background:white;padding:20px;border-radius:12px;margin-bottom:20px }
+.good { color:#4a5bdc } .bad { color:#d9534f }
+</style>
+</head>
+<body>
+
+<h2>📊 나의 학습 요약</h2>
+<a href="index.html">← 홈</a>
+
+<div class="card" id="info"></div>
+<div class="card" id="study"></div>
+
+<script>
+const data=localStorage.getItem("loginUser");
+if(!data){ alert("로그인 필요"); location.href="index.html"; }
+
+const user=JSON.parse(data);
+if(user.role!=="student"){ alert("학생 전용"); location.href="index.html"; }
+
+document.getElementById("info").innerHTML=
+`${user.grade}학년 ${user.classNum}반 ${user.number}번<br>학번: ${user.code}`;
+
+const study=JSON.parse(
+  localStorage.getItem("study_"+user.classNum+"반")
+)||[];
+
+const me=study[user.number-1];
+if(me){
+  const total=me.checks.length;
+  const ok=me.checks.filter(v=>v).length;
+  const p=Math.round(ok/total*100);
+  document.getElementById("study").innerHTML=
+    `<h3>자습 참석률</h3>
+     <p class="${p>=70?'good':'bad'}">${p}%</p>`;
+}else{
+  document.getElementById("study").innerText="자습 데이터 없음";
+}
+</script>
+</body>
+</html>
