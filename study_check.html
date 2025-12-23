@@ -31,11 +31,27 @@ a {
   background: #e0e4ff;
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.class-buttons button:hover {
+  background: #c5ccff;
 }
 
 .class-buttons button.active {
   background: #4a5bdc;
   color: white;
+}
+
+/* 통계 영역 */
+#stats {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.8;
 }
 
 table {
@@ -65,6 +81,7 @@ tbody tr:hover { background: #e8ecff; }
 input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  cursor: pointer;
   accent-color: #4a5bdc;
 }
 
@@ -81,17 +98,13 @@ td:first-child {
 <h2>📘 자습 체크리스트</h2>
 <a href="index.html">← 홈으로</a>
 
+<!-- 반 선택 버튼 -->
 <div class="class-buttons" id="classButtons"></div>
-<!-- 통계 영역 -->
-<div id="stats" style="
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
-  margin-bottom:20px;
-  font-size:14px;
-"></div>
 
+<!-- 통계 영역 -->
+<div id="stats"></div>
+
+<!-- 체크리스트 테이블 -->
 <table>
 <thead>
 <tr>
@@ -99,78 +112,101 @@ td:first-child {
   <th colspan="15">자습 체크</th>
 </tr>
 <tr>
-  <th>월 8교시</th><th>월 야자 1교시</th><th>월 야자 2교시</th>
-  <th>화 8교시</th><th>화 야자 1교시</th><th>화 야자 2교시</th>
-  <th>수 8교시</th><th>수 야자 1교시</th><th>수 야자 2교시</th>
-  <th>목 8교시</th><th>목 야자 1교시</th><th>목 야자 2교시</th>
-  <th>금 8교시</th><th>금 야자 1교시</th><th>금 야자 2교시</th>
+  <th>월 8교시</th><th>월 야자1</th><th>월 야자2</th>
+  <th>화 8교시</th><th>화 야자1</th><th>화 야자2</th>
+  <th>수 8교시</th><th>수 야자1</th><th>수 야자2</th>
+  <th>목 8교시</th><th>목 야자1</th><th>목 야자2</th>
+  <th>금 8교시</th><th>금 야자1</th><th>금 야자2</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
 </table>
 
 <script>
-let currentClass = "1반";
+/* === 전역 변수 === */
+let currentClass = "1반"; // 현재 선택된 반
 const tableBody = document.getElementById("tableBody");
 const classButtons = document.getElementById("classButtons");
 
-/* 반 버튼 */
-for(let i=1;i<=7;i++){
-  const btn=document.createElement("button");
-  btn.innerText=i+"반";
-  if(i===1) btn.classList.add("active");
-  btn.onclick=()=>switchClass(i+"반",btn);
+/* === 1~7반 버튼 생성 === */
+for(let i=1; i<=7; i++){
+  const btn = document.createElement("button");
+  btn.innerText = i + "반";
+  if(i===1) btn.classList.add("active"); // 1반 기본 선택
+  btn.onclick = () => switchClass(i+"반", btn);
   classButtons.appendChild(btn);
 }
 
-  function switchClass(cls,btn){
-  currentClass=cls;
+/* === 반 전환 함수 === */
+function switchClass(cls, btn){
+  currentClass = cls;
   document.querySelectorAll(".class-buttons button")
-    .forEach(b=>b.classList.remove("active"));
+    .forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   render();
+  renderStats();
 }
 
+/* === 데이터 가져오기 === */
 function getData(){
-  let data=JSON.parse(localStorage.getItem("study_"+currentClass));
+  let data = JSON.parse(localStorage.getItem("study_"+currentClass));
   if(!data){
-    data=[];
-    for(let i=1;i<=24;i++){
-      data.push({ number:i, checks:Array(15).fill(false) });
+    data = [];
+    for(let i=1; i<=24; i++){
+      data.push({ 
+        number: i, 
+        checks: Array(15).fill(false) // 15개 체크박스 초기화
+      });
     }
-    localStorage.setItem("study_"+currentClass,JSON.stringify(data));
+    localStorage.setItem("study_"+currentClass, JSON.stringify(data));
   }
   return data;
 }
 
-function toggleCheck(s,c){
-  const data=getData();
-  data[s].checks[c]=!data[s].checks[c];
-  localStorage.setItem("study_"+currentClass,JSON.stringify(data));
+/* === 체크박스 토글 === */
+function toggleCheck(s, c){
+  const data = getData();
+  data[s].checks[c] = !data[s].checks[c]; // 체크 상태 반전
+  localStorage.setItem("study_"+currentClass, JSON.stringify(data));
+  renderStats(); // 통계 업데이트
 }
 
+/* === 테이블 렌더링 === */
 function render(){
-  const data=getData();
-  tableBody.innerHTML="";
-
-  data.forEach((stu,s)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${stu.number}</td>`;
-    stu.checks.forEach((chk,c)=>{
-      const td=document.createElement("td");
-      const cb=document.createElement("input");
-      cb.type="checkbox";
-      cb.checked=chk;
-      cb.onchange=()=>{ toggleCheck(s,c); renderStats(); };
+  const data = getData();
+  tableBody.innerHTML = "";
+  
+  data.forEach((stu, s) => {
+    const tr = document.createElement("tr");
+    
+    // 번호 셀 추가
+    const numberCell = document.createElement("td");
+    numberCell.textContent = stu.number;
+    tr.appendChild(numberCell);
+    
+    // 15개 체크박스 셀 추가 (forEach 대신 for 루프 사용)
+    for(let c = 0; c < 15; c++){
+      const td = document.createElement("td");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = stu.checks[c]; // 저장된 상태 적용
+      
+      // 클로저로 인덱스 캡처
+      cb.onchange = (function(studentIndex, checkIndex){
+        return function(){
+          toggleCheck(studentIndex, checkIndex);
+        };
+      })(s, c);
+      
       td.appendChild(cb);
       tr.appendChild(td);
-    });
+    }
+    
     tableBody.appendChild(tr);
   });
-
-  renderStats();
 }
 
+/* === 통계 렌더링 === */
 function renderStats(){
   const data = getData();
   const statsDiv = document.getElementById("stats");
@@ -182,8 +218,8 @@ function renderStats(){
   // 요일·교시별 카운트
   const slotCount = Array(15).fill(0);
 
-  data.forEach(stu=>{
-    stu.checks.forEach((chk,i)=>{
+  data.forEach(stu => {
+    stu.checks.forEach((chk, i) => {
       if(chk){
         checkedTotal++;
         slotCount[i]++;
@@ -204,18 +240,21 @@ function renderStats(){
 
   let html = `
     <strong>📊 ${currentClass} 자습 통계</strong><br>
-    전체 달성률: <strong>${percent}%</strong>
+    전체 달성률: <strong style="color:#4a5bdc;">${percent}%</strong>
     (${checkedTotal}/${maxChecks})<br><br>
   `;
 
-  labels.forEach((label,i)=>{
-    html += `${label}: ${slotCount[i]} / 24명<br>`;
+  labels.forEach((label, i) => {
+    const rate = Math.round((slotCount[i] / totalStudents) * 100);
+    html += `${label}: <strong>${slotCount[i]}</strong>/24명 (${rate}%)<br>`;
   });
 
   statsDiv.innerHTML = html;
 }
 
+/* === 초기 렌더링 === */
 render();
+renderStats();
 </script>
 
 </body>
