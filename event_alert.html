@@ -3,91 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <title>학교 행사 캘린더</title>
-
 <style>
-  
-.today {
-  border: 2px solid #ff5252;
-  background: #fff5f5;
-}
-
-  
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
+  background: #f5f7fb;
 }
 
 a {
   text-decoration: none;
-  color: #0077cc;
+  color: #4a5bdc;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 15px;
 }
 
 h2 {
   margin-bottom: 10px;
+  color: #333;
 }
 
 /* 입력 영역 */
 .control {
-  margin-top: 15px;
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.control input,
+.control input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.control input[type="date"] {
+  width: 150px;
+}
+
+.control input[type="text"] {
+  flex: 1;
+  max-width: 300px;
+}
+
 .control button {
-  padding: 6px;
-  margin-right: 5px;
+  padding: 8px 20px;
+  background: #4a5bdc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-/* 캘린더 */
+.control button:hover {
+  background: #3849c7;
+}
+
+/* 캘린더 그리드 */
 .calendar {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  grid-template-columns: repeat(7, 1fr); /* 7열 (일~토) */
+  gap: 3px;
   margin-top: 20px;
-  max-width: 700px;
+  max-width: 800px;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
+/* 요일 헤더 */
 .head {
-  background: #333;
+  background: #4a5bdc;
   color: white;
   text-align: center;
-  padding: 10px 0;
+  padding: 12px 0;
   font-weight: bold;
+  font-size: 14px;
 }
 
+/* 날짜 칸 */
 .day {
-  border: 1px solid #ccc;
+  border: 1px solid #e0e4ff;
   min-height: 100px;
-  padding: 5px;
+  padding: 8px;
   box-sizing: border-box;
+  background: white;
+  border-radius: 5px;
 }
 
+/* 날짜 숫자 */
 .day-number {
   font-weight: bold;
   margin-bottom: 5px;
+  color: #333;
+  font-size: 16px;
 }
 
+/* 행사 항목 */
 .event {
   background: #e3f2fd;
   margin-top: 3px;
-  padding: 2px 4px;
+  padding: 4px 6px;
   font-size: 12px;
-  border-radius: 3px;
+  border-radius: 4px;
+  border-left: 3px solid #4a5bdc;
+  word-break: break-word;
+}
+
+/* 오늘 날짜 강조 */
+.today {
+  border: 2px solid #ff5252;
+  background: #fff5f5;
 }
 </style>
 </head>
-
 <body>
 
-<h2>학교 행사 캘린더</h2>
+<h2>📅 학교 행사 캘린더</h2>
 <a href="index.html">← 홈으로</a>
 
+<!-- 행사 추가 입력 영역 -->
 <div class="control">
   <input type="date" id="eventDate">
-  <input type="text" id="eventText" placeholder="행사 내용">
+  <input type="text" id="eventText" placeholder="행사 내용 입력">
   <button onclick="addEvent()">추가</button>
 </div>
 
+<!-- 캘린더 그리드 -->
 <div class="calendar" id="calendar">
+  <!-- 요일 헤더 -->
   <div class="head">일</div>
   <div class="head">월</div>
   <div class="head">화</div>
@@ -98,66 +145,89 @@ h2 {
 </div>
 
 <script>
-const calendar = document.getElementById('calendar');
-const today = new Date();
-const year = today.getFullYear();
-const month = today.getMonth();
+/* === 전역 변수 === */
+const calendar = document.getElementById('calendar'); // 캘린더 요소
+const today = new Date(); // 오늘 날짜 객체
+const year = today.getFullYear(); // 현재 연도
+const month = today.getMonth(); // 현재 월 (0~11)
 
+// 로컬스토리지에서 행사 데이터 가져오기 (없으면 빈 객체)
 let events = JSON.parse(localStorage.getItem("calendarEvents") || "{}");
 
+/* === 날짜 포맷 함수 === */
 function formatDate(y, m, d) {
+  // "2024-12-23" 형식으로 반환
   return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 }
 
+/* === 캘린더 그리기 === */
 function drawCalendar(){
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-
+  const firstDay = new Date(year, month, 1).getDay(); // 이번 달 1일의 요일 (0:일~6:토)
+  const lastDate = new Date(year, month + 1, 0).getDate(); // 이번 달 마지막 날짜
+  
+  // 1일 전까지 빈 칸 채우기
   for(let i = 0; i < firstDay; i++){
-    calendar.appendChild(document.createElement("div"));
+    const emptyDiv = document.createElement("div");
+    calendar.appendChild(emptyDiv);
   }
-
+  
+  // 1일부터 마지막 날까지 날짜 칸 생성
   for(let d = 1; d <= lastDate; d++){
-    const dateKey = formatDate(year, month + 1, d);
-    const box = document.createElement("div");
+    const dateKey = formatDate(year, month + 1, d); // 날짜 키 생성
+    const box = document.createElement("div"); // 날짜 칸 생성
     box.className = "day";
-
+    
+    // 오늘 날짜 강조
     const todayKey = formatDate(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    today.getDate()
-  );
-
-if (dateKey === todayKey) {
-  box.classList.add("today");
-}
-;
-
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate()
+    );
+    if (dateKey === todayKey) {
+      box.classList.add("today"); // 오늘이면 today 클래스 추가
+    }
+    
+    // 날짜 숫자 추가
     box.innerHTML = `<div class="day-number">${d}</div>`;
-
+    
+    // 해당 날짜에 등록된 행사가 있으면 표시
     if(events[dateKey]){
       events[dateKey].forEach(e => {
         box.innerHTML += `<div class="event">${e}</div>`;
       });
     }
-
+    
     calendar.appendChild(box);
   }
 }
 
+/* === 행사 추가 함수 === */
 function addEvent(){
-  const date = eventDate.value;
-  const text = eventText.value.trim();
-
-  if(!date || !text) return;
-
+  const date = eventDate.value; // 선택한 날짜
+  const text = eventText.value.trim(); // 입력한 행사 내용 (공백 제거)
+  
+  if(!date || !text) {
+    alert("날짜와 행사 내용을 모두 입력해주세요!");
+    return;
+  }
+  
+  // 해당 날짜에 행사 배열이 없으면 생성
   if(!events[date]) events[date] = [];
+  
+  // 행사 추가
   events[date].push(text);
-
+  
+  // 로컬스토리지에 저장
   localStorage.setItem("calendarEvents", JSON.stringify(events));
+  
+  // 입력창 초기화
+  eventText.value = "";
+  
+  // 페이지 새로고침
   location.reload();
 }
 
+// 페이지 로드 시 캘린더 그리기
 drawCalendar();
 </script>
 
