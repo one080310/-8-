@@ -360,8 +360,10 @@ function render() {
       <div class="class-checkboxes">
         ${[1,2,3,4,5,6,7].map(n => `
           <div class="class-checkbox-item">
-            <input type="checkbox" class="class-checkbox" value="${n}">
-            <label>${n}반</label>
+            <label>
+               <input type="checkbox" class="class-checkbox" value="${n}">
+               ${n}반
+            </label>
           </div>
         `).join("")}
       </div>
