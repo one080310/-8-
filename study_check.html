@@ -2,9 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>자습 체크 & 반별 참석률</title>
+<title>자습 체크 & 반별 참석률 (날짜 기반)</title>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -13,9 +12,7 @@ body {
   background:#f5f7fb;
   padding:20px;
 }
-
 h2 { margin-bottom:10px; }
-
 a {
   text-decoration:none;
   font-weight:600;
@@ -23,7 +20,6 @@ a {
   display:inline-block;
   margin-bottom:15px;
 }
-
 .class-buttons button {
   margin:4px;
   padding:8px 16px;
@@ -37,7 +33,6 @@ a {
   background:#4a5bdc;
   color:white;
 }
-
 table {
   width:100%;
   border-collapse:collapse;
@@ -65,36 +60,25 @@ input[type="checkbox"] {
   height:18px;
   accent-color:#4a5bdc;
 }
-select {
-  padding:6px 10px;
-  margin-left:10px;
-}
-hr {
-  margin:40px 0;
-}
+hr { margin:40px 0; }
 </style>
 </head>
 
 <body>
 
-<h2>📘 자습 체크리스트</h2>
+<h2>📘 자습 체크리스트 (날짜 기준 주차)</h2>
 <a href="index.html">← 홈으로</a>
 
 <!-- 반 선택 -->
 <div class="class-buttons" id="classButtons"></div>
 
-<!-- 주차 선택 -->
+<!-- 날짜 선택 -->
 <div style="margin:15px 0;">
-  <strong>주차:</strong>
-  <select id="weekSelect" onchange="changeWeek()">
-    <option value="1주차">1주차</option>
-    <option value="2주차">2주차</option>
-    <option value="3주차">3주차</option>
-    <option value="4주차">4주차</option>
-  </select>
+  <strong>날짜 선택:</strong>
+  <input type="date" id="datePicker" onchange="render()">
+  <span id="weekInfo" style="margin-left:15px;font-weight:600;"></span>
 </div>
 
-<!-- 체크 테이블 -->
 <table>
 <thead>
 <tr>
@@ -102,11 +86,11 @@ hr {
   <th colspan="15">자습 체크</th>
 </tr>
 <tr>
-  <th>월 8교시</th><th>월 야자1</th><th>월 야자2</th>
-  <th>화 8교시</th><th>화 야자1</th><th>화 야자2</th>
-  <th>수 8교시</th><th>수 야자1</th><th>수 야자2</th>
-  <th>목 8교시</th><th>목 야자1</th><th>목 야자2</th>
-  <th>금 8교시</th><th>금 야자1</th><th>금 야자2</th>
+  <th>월 8</th><th>월 야1</th><th>월 야2</th>
+  <th>화 8</th><th>화 야1</th><th>화 야2</th>
+  <th>수 8</th><th>수 야1</th><th>수 야2</th>
+  <th>목 8</th><th>목 야1</th><th>목 야2</th>
+  <th>금 8</th><th>금 야1</th><th>금 야2</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -118,71 +102,74 @@ hr {
 <canvas id="classChart" height="120"></canvas>
 
 <script>
-let currentClass = "1반";
-let currentWeek = "1주차";
+let currentClass="1반";
 let chart;
 
-const tableBody = document.getElementById("tableBody");
-const classButtons = document.getElementById("classButtons");
+const tableBody=document.getElementById("tableBody");
+const weekInfo=document.getElementById("weekInfo");
 
-/* 반 버튼 생성 */
+/* 오늘 날짜 기본 */
+document.getElementById("datePicker").value =
+  new Date().toISOString().split("T")[0];
+
+/* 반 버튼 */
+const classButtons=document.getElementById("classButtons");
 for(let i=1;i<=7;i++){
-  const btn=document.createElement("button");
-  btn.textContent=i+"반";
-  if(i===1) btn.classList.add("active");
-  btn.onclick=()=>switchClass(i+"반",btn);
-  classButtons.appendChild(btn);
+  const b=document.createElement("button");
+  b.textContent=i+"반";
+  if(i===1) b.classList.add("active");
+  b.onclick=()=>{
+    currentClass=i+"반";
+    document.querySelectorAll(".class-buttons button")
+      .forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    render();
+  };
+  classButtons.appendChild(b);
 }
 
-/* 반 변경 */
-function switchClass(cls, btn){
-  currentClass=cls;
-  document.querySelectorAll(".class-buttons button")
-    .forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  render();
+/* 날짜 → 주차 계산 */
+function getWeekKey(){
+  const date=new Date(document.getElementById("datePicker").value);
+  const year=date.getFullYear();
+  const month=date.getMonth();
+  const first=new Date(year,month,1);
+  const week=Math.ceil((date.getDate()+first.getDay())/7);
+  weekInfo.textContent=
+    `${year}년 ${month+1}월 ${week}주차`;
+  return `${year}-${month+1}-week${week}`;
 }
 
-/* 주차 변경 */
-function changeWeek(){
-  currentWeek=document.getElementById("weekSelect").value;
-  render();
-}
-
-/* 데이터 가져오기 */
+/* 데이터 */
 function getData(cls=currentClass){
-  const key="study_"+cls+"_"+currentWeek;
+  const key=`study_${cls}_${getWeekKey()}`;
   let data=JSON.parse(localStorage.getItem(key));
   if(!data){
     data=[];
     for(let i=1;i<=24;i++){
-      data.push({ number:i, checks:Array(15).fill(false) });
+      data.push({number:i,checks:Array(15).fill(false)});
     }
     localStorage.setItem(key,JSON.stringify(data));
   }
   return data;
 }
 
-/* 체크 토글 */
+/* 체크 */
 function toggleCheck(s,c){
-  const key="study_"+currentClass+"_"+currentWeek;
+  const key=`study_${currentClass}_${getWeekKey()}`;
   const data=getData();
   data[s].checks[c]=!data[s].checks[c];
   localStorage.setItem(key,JSON.stringify(data));
   render();
 }
 
-/* 테이블 렌더 */
+/* 렌더 */
 function render(){
   const data=getData();
   tableBody.innerHTML="";
-
   data.forEach((stu,s)=>{
     const tr=document.createElement("tr");
-    const num=document.createElement("td");
-    num.textContent=stu.number;
-    tr.appendChild(num);
-
+    tr.innerHTML=`<td>${stu.number}</td>`;
     stu.checks.forEach((ck,c)=>{
       const td=document.createElement("td");
       const cb=document.createElement("input");
@@ -197,20 +184,20 @@ function render(){
   drawChart();
 }
 
-/* 반별 참석률 계산 */
-function getClassRate(cls){
-  const data=getData(cls);
-  let total=24*15, checked=0;
-  data.forEach(s=>s.checks.forEach(c=>{ if(c) checked++; }));
-  return Math.round((checked/total)*100);
+/* 반 참석률 */
+function classRate(cls){
+  const d=getData(cls);
+  let t=24*15,c=0;
+  d.forEach(s=>s.checks.forEach(x=>{if(x)c++;}));
+  return Math.round((c/t)*100);
 }
 
 /* 그래프 */
 function drawChart(){
-  const labels=[], values=[];
+  const labels=[],values=[];
   for(let i=1;i<=7;i++){
     labels.push(i+"반");
-    values.push(getClassRate(i+"반"));
+    values.push(classRate(i+"반"));
   }
   if(chart) chart.destroy();
   chart=new Chart(document.getElementById("classChart"),{
@@ -218,14 +205,12 @@ function drawChart(){
     data:{
       labels,
       datasets:[{
-        label:currentWeek+" 참석률 (%)",
+        label:weekInfo.textContent+" 참석률 (%)",
         data:values,
         backgroundColor:"#4a5bdc"
       }]
     },
-    options:{
-      scales:{ y:{ beginAtZero:true, max:100 } }
-    }
+    options:{scales:{y:{beginAtZero:true,max:100}}}
   });
 }
 
