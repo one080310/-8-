@@ -39,6 +39,42 @@
     border-radius: 5px;
     font-size: 14px;
   }
+
+  .class-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 10px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.class-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.class-checkbox-item input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.class-checkbox-item label {
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.class-select-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+  display: block;
+  font-weight: 500;
+}
   
   #teacherBox button {
     width: 100%;
@@ -186,20 +222,31 @@ function addWork() {
   const title = document.getElementById("title").value;
   const content = document.getElementById("content").value;
   const deadline = document.getElementById("deadline").value;
-  const targetClass = document.getElementById("targetClass").value;
+
+  // 체크된 반들 가져오기 (복수 선택)
+  const checkboxes = document.querySelectorAll('.class-checkbox:checked');
+  const selectedClasses = Array.from(checkboxes).map(cb => cb.value);
   
   if (!title || !content || !deadline) {
     alert("모든 항목을 입력해주세요.");
     return;
   }
-  
-  works.push({
-    id: Date.now(),
-    title: title,
-    content: content,
-    deadline: deadline,
-    class: targetClass,
-    createdBy: USER
+
+  if (selectedClasses.length === 0) {
+    alert("최소 1개 반을 선택해주세요.");
+    return;
+  }
+
+  // 선택된 각 반마다 과제 생성 (여러 개 생성)
+  selectedClasses.forEach(targetClass => {
+    works.push({
+      id: Date.now() + Math.random(), // 동시 생성 대비 고유 ID
+      title: title,
+      content: content,
+      deadline: deadline,
+      class: targetClass,
+      createdBy: USER
+    });
   });
   
   localStorage.setItem("works", JSON.stringify(works));
@@ -208,6 +255,9 @@ function addWork() {
   document.getElementById("title").value = "";
   document.getElementById("content").value = "";
   document.getElementById("deadline").value = "";
+
+  // 체크박스 초기화
+  checkboxes.forEach(cb => cb.checked = false);
   
   render();
 }
@@ -259,15 +309,18 @@ function render() {
       <input id="title" placeholder="과제 제목 (예: 수학 문제집 p.45-50)">
       <input id="content" placeholder="과제 내용 및 설명">
       <input id="deadline" type="date">
-      <select id="targetClass">
-        <option value="1">1반</option>
-        <option value="2">2반</option>
-        <option value="3">3반</option>
-        <option value="4">4반</option>
-        <option value="5">5반</option>
-        <option value="6">6반</option>
-        <option value="7">7반</option>
-      </select>
+      <label class="class-select-label">대상 반 선택</label>
+      <div class="class-checkboxes">
+        <div class="class-checkbox-item">
+          <input type="checkbox" id="class1" class="class-checkbox" value="1">
+          <label for="class1">1반</label>
+        </div>
+        <div class="class-checkbox-item">
+          <input type="checkbox" id="class2" class="class-checkbox" value="2">
+          <label for="class2">2반</label>
+        </div>
+        ... (7반까지)
+      </div>
       <button onclick="addWork()">과제 추가</button>
     `;
   }
@@ -310,25 +363,18 @@ function render() {
     }
     
     const classInfo = ROLE === "teacher" ? `<p>대상: ${w.class}반</p>` : "";
-    
-    workArea.innerHTML += `
-      <div class="notice ${statusClass}">
-        <h3>${w.title}${badge}</h3>
-        ${classInfo}
-        <p>${w.content}</p>
-        <p>📅 마감: ${w.deadline}${closed ? " (마감됨)" : ""}</p>
-        <p>📊 제출: ${list.length}명</p>
-        ${ROLE === "student" ? `
-          <button onclick="submit(${w.id})"
-            ${submitted || closed ? "disabled" : ""}>
-            ${submitted ? "제출 완료" : closed ? "마감됨" : "제출하기"}
-          </button>
-        ` : `
-          <details>
-            <summary>제출자 명단 보기 (${list.length}명)</summary>
-            <div class="submitter-list">
-              ${list.length > 0 ? list.map(n => `<p>✓ ${n}</p>`).join("") : "<p>아직 제출자가 없습니다.</p>"}
-            </div>
+const submitCount = ROLE === "teacher" ? `<p>📊 제출: ${list.length}명</p>` : "";  // ← 선생님만!
+
+workArea.innerHTML += `
+  <div class="notice ${statusClass}">
+    <h3>${w.title}${badge}</h3>
+    ${classInfo}
+    <p>${w.content}</p>
+    <p>📅 마감: ${w.deadline}${closed ? " (마감됨)" : ""}</p>
+    ${submitCount}  // ← 학생한테는 안 보임!
+    ...
+  </div>
+`;
           </details>
           <button class="delete-btn" onclick="deleteWork(${w.id})">삭제</button>
         `}
