@@ -82,6 +82,15 @@ td:first-child {
 <a href="index.html">← 홈으로</a>
 
 <div class="class-buttons" id="classButtons"></div>
+<!-- 통계 영역 -->
+<div id="stats" style="
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  margin-bottom:20px;
+  font-size:14px;
+"></div>
 
 <table>
 <thead>
@@ -114,7 +123,7 @@ for(let i=1;i<=7;i++){
   classButtons.appendChild(btn);
 }
 
-function switchClass(cls,btn){
+  function switchClass(cls,btn){
   currentClass=cls;
   document.querySelectorAll(".class-buttons button")
     .forEach(b=>b.classList.remove("active"));
@@ -157,6 +166,49 @@ function render(){
     });
     tableBody.appendChild(tr);
   });
+}
+function renderStats(){
+  const data = getData();
+  const statsDiv = document.getElementById("stats");
+
+  const totalStudents = 24;
+  const totalSlots = 15;
+  let checkedTotal = 0;
+
+  // 요일·교시별 카운트
+  const slotCount = Array(15).fill(0);
+
+  data.forEach(stu=>{
+    stu.checks.forEach((chk,i)=>{
+      if(chk){
+        checkedTotal++;
+        slotCount[i]++;
+      }
+    });
+  });
+
+  const maxChecks = totalStudents * totalSlots;
+  const percent = Math.round((checkedTotal / maxChecks) * 100);
+
+  const labels = [
+    "월 8교시","월 야자1","월 야자2",
+    "화 8교시","화 야자1","화 야자2",
+    "수 8교시","수 야자1","수 야자2",
+    "목 8교시","목 야자1","목 야자2",
+    "금 8교시","금 야자1","금 야자2"
+  ];
+
+  let html = `
+    <strong>📊 ${currentClass} 자습 통계</strong><br>
+    전체 달성률: <strong>${percent}%</strong>
+    (${checkedTotal}/${maxChecks})<br><br>
+  `;
+
+  labels.forEach((label,i)=>{
+    html += `${label}: ${slotCount[i]} / 24명<br>`;
+  });
+
+  statsDiv.innerHTML = html;
 }
 
 render();
