@@ -39,42 +39,42 @@
     border-radius: 5px;
     font-size: 14px;
   }
-
+  
   .class-checkboxes {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin: 10px 0;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.class-checkbox-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.class-checkbox-item input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-  cursor: pointer;
-}
-
-.class-checkbox-item label {
-  cursor: pointer;
-  font-size: 14px;
-  color: #333;
-}
-
-.class-select-label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
-  display: block;
-  font-weight: 500;
-}
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 10px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .class-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .class-checkbox-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+  }
+  
+  .class-checkbox-item label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .class-select-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+    font-weight: 500;
+  }
   
   #teacherBox button {
     width: 100%;
@@ -208,25 +208,53 @@
 <div id="workArea"></div>
 
 <script>
-// index.html에서 저장한 loginUser 데이터 읽기
+// =========================
+// 공통 유틸 함수
+// =========================
+function normalizeDate(d) {
+  const date = new Date(d);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[m]));
+}
+
+// =========================
+// 로그인 정보
+// =========================
 const loginData = JSON.parse(localStorage.getItem("loginUser") || "{}");
 const ROLE = loginData.role;
-const USER = loginData.role === "student" 
+
+const USER = ROLE === "student"
   ? `${loginData.grade}학년 ${loginData.classNum}반 ${loginData.number}번`
   : loginData.name;
-const CLASS = loginData.classNum;
 
+const CLASS = Number(loginData.classNum);
+
+// =========================
+// 과제 데이터
+// =========================
 let works = JSON.parse(localStorage.getItem("works")) || [];
 
+// =========================
+// 과제 추가 (교사)
+// =========================
 function addWork() {
-  const title = document.getElementById("title").value;
-  const content = document.getElementById("content").value;
+  const title = document.getElementById("title").value.trim();
+  const content = document.getElementById("content").value.trim();
   const deadline = document.getElementById("deadline").value;
 
-  // 체크된 반들 가져오기 (복수 선택)
-  const checkboxes = document.querySelectorAll('.class-checkbox:checked');
-  const selectedClasses = Array.from(checkboxes).map(cb => cb.value);
-  
+  const checkboxes = document.querySelectorAll(".class-checkbox:checked");
+  const selectedClasses = Array.from(checkboxes).map(cb => Number(cb.value));
+
   if (!title || !content || !deadline) {
     alert("모든 항목을 입력해주세요.");
     return;
@@ -237,146 +265,161 @@ function addWork() {
     return;
   }
 
-  // 선택된 각 반마다 과제 생성 (여러 개 생성)
   selectedClasses.forEach(targetClass => {
     works.push({
-      id: Date.now() + Math.random(), // 동시 생성 대비 고유 ID
-      title: title,
-      content: content,
-      deadline: deadline,
+      id: "work_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
+      title,
+      content,
+      deadline,
       class: targetClass,
       createdBy: USER
     });
   });
-  
+
   localStorage.setItem("works", JSON.stringify(works));
-  
-  // 입력 필드 초기화
+
   document.getElementById("title").value = "";
   document.getElementById("content").value = "";
   document.getElementById("deadline").value = "";
-
-  // 체크박스 초기화
   checkboxes.forEach(cb => cb.checked = false);
-  
+
   render();
 }
 
+// =========================
+// 과제 삭제 (교사)
+// =========================
 function deleteWork(id) {
-  if (confirm("정말 이 과제를 삭제하시겠습니까?")) {
-    works = works.filter(w => w.id !== id);
-    localStorage.setItem("works", JSON.stringify(works));
-    // 제출 데이터도 삭제
-    localStorage.removeItem("submit_" + id);
-    render();
-  }
+  if (!confirm("정말 이 과제를 삭제하시겠습니까?")) return;
+
+  works = works.filter(w => w.id !== id);
+  localStorage.setItem("works", JSON.stringify(works));
+  localStorage.removeItem("submit_" + id);
+
+  render();
 }
 
+// =========================
+// 과제 제출 (학생)
+// =========================
 function submit(id) {
+  const work = works.find(w => w.id === id);
+  if (!work) return;
+
+  const today = normalizeDate(new Date());
+  const deadline = normalizeDate(work.deadline);
+
+  if (today > deadline) {
+    alert("마감된 과제입니다.");
+    return;
+  }
+
   const key = "submit_" + id;
   let list = JSON.parse(localStorage.getItem(key)) || [];
-  
+
   if (!list.includes(USER)) {
     list.push(USER);
     localStorage.setItem(key, JSON.stringify(list));
-    alert("과제가 제출되었습니다!");
+    alert("과제가 제출되었습니다.");
     render();
   }
 }
 
+// =========================
+// 마감 상태 판단
+// =========================
 function getDeadlineStatus(deadline) {
-  const today = new Date().toISOString().slice(0, 10);
-  const deadlineDate = new Date(deadline);
-  const todayDate = new Date(today);
-  const diffDays = Math.ceil((deadlineDate - todayDate) / (1000 * 60 * 60 * 24));
-  
+  const today = normalizeDate(new Date());
+  const deadlineDate = normalizeDate(deadline);
+
+  const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+
   if (diffDays < 0) return "passed";
   if (diffDays <= 2) return "soon";
   return "normal";
 }
 
+// =========================
+// 화면 렌더링
+// =========================
 function render() {
   const workArea = document.getElementById("workArea");
   const teacherBox = document.getElementById("teacherBox");
-  
+
   workArea.innerHTML = "";
   teacherBox.innerHTML = "";
-  
-  // 선생님 UI
+
+  // 교사용 UI
   if (ROLE === "teacher") {
     teacherBox.innerHTML = `
       <h3>📝 과제 추가</h3>
-      <input id="title" placeholder="과제 제목 (예: 수학 문제집 p.45-50)">
-      <input id="content" placeholder="과제 내용 및 설명">
+      <input id="title" placeholder="과제 제목">
+      <input id="content" placeholder="과제 내용">
       <input id="deadline" type="date">
       <label class="class-select-label">대상 반 선택</label>
       <div class="class-checkboxes">
-        <div class="class-checkbox-item">
-          <input type="checkbox" id="class1" class="class-checkbox" value="1">
-          <label for="class1">1반</label>
-        </div>
-        <div class="class-checkbox-item">
-          <input type="checkbox" id="class2" class="class-checkbox" value="2">
-          <label for="class2">2반</label>
-        </div>
-        ... (7반까지)
+        ${[1,2,3,4,5,6,7].map(n => `
+          <div class="class-checkbox-item">
+            <input type="checkbox" class="class-checkbox" value="${n}">
+            <label>${n}반</label>
+          </div>
+        `).join("")}
       </div>
       <button onclick="addWork()">과제 추가</button>
     `;
   }
-  
-  // 내 반 과제만 필터링
-  const myWorks = ROLE === "teacher" 
-    ? works 
-    : works.filter(w => String(w.class) === String(parseInt(CLASS)));
-  
+
+  const myWorks = ROLE === "teacher"
+    ? works
+    : works.filter(w => w.class === CLASS);
+
   if (myWorks.length === 0) {
     workArea.innerHTML = `
       <div class="notice">
-        <p style="text-align: center; color: #999;">등록된 과제가 없습니다.</p>
+        <p style="text-align:center;color:#999;">등록된 과제가 없습니다.</p>
       </div>
     `;
     return;
   }
-  
+
   myWorks.forEach(w => {
     const key = "submit_" + w.id;
-    let list = JSON.parse(localStorage.getItem(key)) || [];
+    const list = JSON.parse(localStorage.getItem(key)) || [];
+
     const submitted = list.includes(USER);
-    const today = new Date().toISOString().slice(0, 10);
-    const closed = today > w.deadline;
-    const deadlineStatus = getDeadlineStatus(w.deadline);
-    
-    let statusClass = "";
-    if (deadlineStatus === "passed") statusClass = "deadline-passed";
-    else if (deadlineStatus === "soon") statusClass = "deadline-soon";
-    
+    const closed = normalizeDate(new Date()) > normalizeDate(w.deadline);
+
+    const status = getDeadlineStatus(w.deadline);
+    const statusClass =
+      status === "passed" ? "deadline-passed" :
+      status === "soon" ? "deadline-soon" : "";
+
     let badge = "";
     if (ROLE === "student") {
-      if (submitted) {
-        badge = '<span class="status-badge badge-completed">✅ 제출 완료</span>';
-      } else if (closed) {
-        badge = '<span class="status-badge badge-closed">❌ 마감</span>';
-      } else {
-        badge = '<span class="status-badge badge-pending">⏳ 미제출</span>';
-      }
+      if (submitted) badge = '<span class="status-badge badge-completed">제출 완료</span>';
+      else if (closed) badge = '<span class="status-badge badge-closed">마감</span>';
+      else badge = '<span class="status-badge badge-pending">미제출</span>';
     }
-    
-    const classInfo = ROLE === "teacher" ? `<p>대상: ${w.class}반</p>` : "";
-const submitCount = ROLE === "teacher" ? `<p>📊 제출: ${list.length}명</p>` : "";  // ← 선생님만!
 
-workArea.innerHTML += `
-  <div class="notice ${statusClass}">
-    <h3>${w.title}${badge}</h3>
-    ${classInfo}
-    <p>${w.content}</p>
-    <p>📅 마감: ${w.deadline}${closed ? " (마감됨)" : ""}</p>
-    ${submitCount}  // ← 학생한테는 안 보임!
-    ...
-  </div>
-`;
+    workArea.innerHTML += `
+      <div class="notice ${statusClass}">
+        <h3>${escapeHTML(w.title)} ${badge}</h3>
+        ${ROLE === "teacher" ? `<p>대상: ${w.class}반</p>` : ""}
+        <p>${escapeHTML(w.content)}</p>
+        <p>마감일: ${w.deadline}${closed ? " (마감됨)" : ""}</p>
+
+        ${ROLE === "student" ? `
+          <button onclick="submit('${w.id}')"
+            ${submitted || closed ? "disabled" : ""}>
+            ${submitted ? "제출 완료" : closed ? "마감됨" : "제출하기"}
+          </button>
+        ` : `
+          <p>제출: ${list.length}명</p>
+          <details>
+            <summary>제출자 명단</summary>
+            ${list.length ? list.map(n => `<p>✓ ${n}</p>`).join("") : "<p>없음</p>"}
           </details>
-          <button class="delete-btn" onclick="deleteWork(${w.id})">삭제</button>
+          <button class="delete-btn" onclick="deleteWork('${w.id}')">삭제</button>
         `}
       </div>
     `;
@@ -385,5 +428,3 @@ workArea.innerHTML += `
 
 render();
 </script>
-</body>
-</html>
