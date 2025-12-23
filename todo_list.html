@@ -5,169 +5,142 @@
 <title>반별 투두리스트</title>
 <style>
 body {
-  font-family:Segoe UI, sans-serif;
+  font-family: Segoe UI, sans-serif;
   background:#f5f7fb;
   padding:20px;
 }
 .box {
   background:white;
-  border-radius:14px;
   padding:20px;
+  border-radius:14px;
   margin-bottom:20px;
 }
-.todo {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
+table {
+  border-collapse:collapse;
+  width:100%;
 }
-.g1 { background:#e8f0ff; }
-.g2 { background:#e8fff1; }
-.g3 { background:#fff3e8; }
-.checked {
-  text-decoration:line-through;
-  opacity:0.6;
+th, td {
+  border:1px solid #ddd;
+  padding:6px;
+  text-align:center;
+  font-size:13px;
 }
-.teacher-check { accent-color:#d9534f; }
-.student-check { accent-color:#4a5bdc; }
-
-button, select, input {
-  padding:8px;
-  margin:4px;
+th {
+  background:#eef1ff;
 }
-.filter button {
+.student {
+  background:#fafafa;
   font-weight:600;
 }
-.active {
-  background:#4a5bdc;
-  color:white;
+.teacher-check {
+  accent-color:#d9534f;
+}
+.student-check {
+  accent-color:#4a5bdc;
+}
+input[type=text] {
+  padding:6px;
+}
+button {
+  padding:6px 12px;
+  margin-left:6px;
 }
 </style>
 </head>
 <body>
 
-<h2>📋 반별 투두리스트</h2>
+<h2>📋 반별 투두리스트 (엑셀형)</h2>
 <a href="index.html">← 홈</a>
 
-<!-- 학년 필터 -->
-<div class="box filter" id="gradeFilter"></div>
-
-<!-- 선생님 추가 -->
-<div class="box" id="teacherPanel" style="display:none;">
-  <h3>👩‍🏫 투두 추가</h3>
-  학년
-  <select id="grade">
-    <option value="1">1학년</option>
-    <option value="2">2학년</option>
-    <option value="3">3학년</option>
-  </select>
-  반
-  <select id="classNum">
-    <option>1</option><option>2</option><option>3</option>
-    <option>4</option><option>5</option><option>6</option><option>7</option>
-  </select>
-  <br>
-  <input id="todoText" placeholder="할 일">
-  <button onclick="addTodo()">추가</button>
+<div class="box">
+  <b>2학년 1반</b> <!-- 나중에 자동화 가능 -->
 </div>
 
-<div id="todoArea"></div>
+<!-- 선생님: 할 일 추가 -->
+<div class="box" id="teacherBox" style="display:none;">
+  <input id="newTodo" placeholder="할 일 추가">
+  <button onclick="addTodo()">+ 열 추가</button>
+</div>
+
+<div class="box">
+  <table id="todoTable"></table>
+</div>
 
 <script>
 const user = JSON.parse(localStorage.getItem("loginUser"));
 if(!user){ alert("로그인 필요"); location.href="index.html"; }
 
-const todoArea = document.getElementById("todoArea");
-const teacherPanel = document.getElementById("teacherPanel");
-const filterBox = document.getElementById("gradeFilter");
+const grade = 2;
+const classNum = 1;
+const key = `tableTodo_${grade}_${classNum}`;
 
-let currentGrade = user.role==="student" ? user.grade : "all";
-
-if(user.role==="teacher") teacherPanel.style.display="block";
-
-/* 학년 필터 UI */
-function renderFilter(){
-  if(user.role==="student"){
-    filterBox.innerHTML = `<b>${user.grade}학년 투두</b>`;
-    return;
-  }
-  filterBox.innerHTML = `
-    <button onclick="setGrade('all')" class="${currentGrade==='all'?'active':''}">전체</button>
-    <button onclick="setGrade('1')" class="${currentGrade==='1'?'active':''}">1학년</button>
-    <button onclick="setGrade('2')" class="${currentGrade==='2'?'active':''}">2학년</button>
-    <button onclick="setGrade('3')" class="${currentGrade==='3'?'active':''}">3학년</button>
-  `;
+if(user.role==="teacher"){
+  document.getElementById("teacherBox").style.display="block";
 }
 
-function setGrade(g){
-  currentGrade=g;
-  renderFilter();
-  loadTodos();
+/* 기본 데이터 */
+let data = JSON.parse(localStorage.getItem(key));
+if(!data){
+  data = {
+    todos: [],
+    students: Array.from({length:24},(_,i)=>({
+      num:i+1,
+      checks:[]
+    }))
+  };
+  localStorage.setItem(key, JSON.stringify(data));
 }
 
-/* 투두 로딩 */
-function loadTodos(){
-  todoArea.innerHTML="";
-  const todos = JSON.parse(localStorage.getItem("classTodos")) || [];
+/* 테이블 그리기 */
+function render(){
+  const table = document.getElementById("todoTable");
+  table.innerHTML="";
 
-  todos.forEach((t,i)=>{
-    if(user.role==="student"){
-      if(t.grade!==user.grade || t.classNum!==user.classNum) return;
-    } else {
-      if(currentGrade!=="all" && t.grade!=currentGrade) return;
-    }
+  // 헤더
+  let header = "<tr><th>번호</th>";
+  data.todos.forEach(t=> header+=`<th>${t}</th>`);
+  header += "</tr>";
+  table.innerHTML+=header;
 
-    const div=document.createElement("div");
-    div.className=`todo g${t.grade} ${t.teacherChecked?"checked":""}`;
-
-    div.innerHTML=`
-      <span><b>${t.grade}학년 ${t.classNum}반</b> - ${t.text}</span>
-      ${
-        user.role==="teacher"
-        ? `<input type="checkbox" class="teacher-check"
-            ${t.teacherChecked?"checked":""}
-            onchange="teacherCheck(${i})">`
-        : `<input type="checkbox" class="student-check"
-            ${t.studentChecked?"checked":""}
-            onchange="studentCheck(${i})">`
-      }
-    `;
-    todoArea.appendChild(div);
+  // 학생 행 (1~24 고정)
+  data.students.forEach((s,si)=>{
+    let row = `<tr><td class="student">${s.num}</td>`;
+    data.todos.forEach((_,ti)=>{
+      const checked = s.checks[ti] || false;
+      row += `
+        <td>
+          <input type="checkbox"
+            class="${user.role==='teacher'?'teacher-check':'student-check'}"
+            ${checked?"checked":""}
+            onchange="toggle(${si},${ti})">
+        </td>`;
+    });
+    row+="</tr>";
+    table.innerHTML+=row;
   });
 }
 
-/* 기능 */
+/* 할 일(열) 추가 */
 function addTodo(){
-  const grade=parseInt(document.getElementById("grade").value);
-  const classNum=parseInt(document.getElementById("classNum").value);
-  const text=document.getElementById("todoText").value.trim();
+  const text=document.getElementById("newTodo").value.trim();
   if(!text) return;
-
-  const todos=JSON.parse(localStorage.getItem("classTodos"))||[];
-  todos.push({ grade,classNum,text,studentChecked:false,teacherChecked:false });
-  localStorage.setItem("classTodos",JSON.stringify(todos));
-  document.getElementById("todoText").value="";
-  loadTodos();
+  data.todos.push(text);
+  data.students.forEach(s=>s.checks.push(false));
+  save();
 }
 
-function studentCheck(i){
-  const t=JSON.parse(localStorage.getItem("classTodos"));
-  t[i].studentChecked=!t[i].studentChecked;
-  localStorage.setItem("classTodos",JSON.stringify(t));
-  loadTodos();
+/* 체크 */
+function toggle(si,ti){
+  data.students[si].checks[ti]=!data.students[si].checks[ti];
+  save();
 }
 
-function teacherCheck(i){
-  const t=JSON.parse(localStorage.getItem("classTodos"));
-  t[i].teacherChecked=!t[i].teacherChecked;
-  localStorage.setItem("classTodos",JSON.stringify(t));
-  loadTodos();
+function save(){
+  localStorage.setItem(key, JSON.stringify(data));
+  render();
 }
 
-renderFilter();
-loadTodos();
+render();
 </script>
 </body>
 </html>
