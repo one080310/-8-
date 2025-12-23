@@ -4,278 +4,195 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>과제 공지</title>
+<link rel="stylesheet" href="./common.css">
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #f5f7fb;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-h2 {
-  color: #333;
-  margin: 0;
-}
-
-a {
-  text-decoration: none;
-  color: #4a5bdc;
-  font-weight: 600;
-}
-
-a:hover {
-  color: #3849c7;
-}
-
-/* 선생님 과제 추가 영역 */
-#teacherBox {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-#teacherBox h3 {
-  margin-top: 0;
-  color: #4a5bdc;
-  margin-bottom: 15px;
-}
-
-#teacherBox input,
-#teacherBox select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 2px solid #e0e4ff;
-  border-radius: 8px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-#teacherBox input:focus,
-#teacherBox select:focus {
-  outline: none;
-  border-color: #4a5bdc;
-}
-
-#teacherBox button {
-  width: 100%;
-  padding: 12px;
-  background: #4a5bdc;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: background 0.3s;
-}
-
-#teacherBox button:hover {
-  background: #3849c7;
-}
-
-/* 과제 카드 */
-.notice {
-  background: white;
-  padding: 20px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-  border-left: 4px solid #4a5bdc;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: transform 0.2s;
-}
-
-.notice:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-}
-
-.notice h3 {
-  margin-top: 0;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.notice p {
-  margin: 8px 0;
-  color: #666;
-  line-height: 1.6;
-}
-
-.notice button {
-  padding: 10px 20px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  transition: all 0.3s;
-}
-
-.notice button:not(:disabled) {
-  background: #4a5bdc;
-  color: white;
-}
-
-.notice button:not(:disabled):hover {
-  background: #3849c7;
-  transform: scale(1.05);
-}
-
-.notice button:disabled {
-  background: #ccc;
-  color: #666;
-  cursor: not-allowed;
-}
-
-.delete-btn {
-  background: #ff6b6b !important;
-  color: white !important;
-  margin-left: 10px;
-}
-
-.delete-btn:hover {
-  background: #ff5252 !important;
-}
-
-details {
-  margin-top: 15px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-summary {
-  cursor: pointer;
-  font-weight: bold;
-  color: #4a5bdc;
-  padding: 5px;
-}
-
-summary:hover {
-  color: #3849c7;
-}
-
-.submitter-list {
-  margin-top: 10px;
-  padding-left: 10px;
-}
-
-.submitter-list p {
-  margin: 5px 0;
-  color: #555;
-}
-
-/* 마감 상태별 스타일 */
-.deadline-passed {
-  border-left-color: #ff6b6b;
-}
-
-.deadline-soon {
-  border-left-color: #ffa500;
-}
-
-/* 상태 뱃지 */
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.badge-completed {
-  background: #d4edda;
-  color: #155724;
-}
-
-.badge-pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.badge-closed {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-/* 빈 상태 메시지 */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-.empty-state p {
-  color: #999;
-  font-size: 16px;
-  margin: 10px 0;
-}
-
-.empty-state .emoji {
-  font-size: 48px;
-  margin-bottom: 10px;
-}
+  body {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  #teacherBox {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  #teacherBox h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  #teacherBox input, #teacherBox select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  #teacherBox button {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  #teacherBox button:hover {
+    background: #45a049;
+  }
+  
+  .notice {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .notice h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .notice p {
+    margin: 8px 0;
+    color: #666;
+  }
+  
+  .notice button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .notice button:not(:disabled) {
+    background: #667eea;
+    color: white;
+  }
+  
+  .notice button:not(:disabled):hover {
+    background: #5568d3;
+  }
+  
+  .notice button:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+  }
+  
+  .delete-btn {
+    background: #ff6b6b !important;
+    color: white !important;
+    margin-left: 10px;
+  }
+  
+  .delete-btn:hover {
+    background: #fa5252 !important;
+  }
+  
+  details {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  summary {
+    cursor: pointer;
+    font-weight: bold;
+    color: #667eea;
+  }
+  
+  .submitter-list {
+    margin-top: 10px;
+    padding-left: 20px;
+  }
+  
+  .deadline-passed {
+    border-left-color: #ff6b6b;
+  }
+  
+  .deadline-soon {
+    border-left-color: #ffa500;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+  
+  .badge-completed {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  
+  .badge-closed {
+    background: #f8d7da;
+    color: #721c24;
+  }
 </style>
 </head>
 <body>
-
 <div class="header">
   <h2>📢 과제 공지</h2>
-  <a href="index.html">← 홈으로</a>
+  <a href="index.html">← 홈</a>
 </div>
 
-<!-- 선생님 전용 과제 추가 영역 -->
+<!-- 선생님 전용 -->
 <div id="teacherBox"></div>
-
-<!-- 과제 목록 -->
 <div id="workArea"></div>
 
 <script>
-/* === 사용자 정보 가져오기 === */
-const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+// index.html에서 저장한 loginUser 데이터 읽기
+const loginData = JSON.parse(localStorage.getItem("loginUser") || "{}");
+const ROLE = loginData.role;
+const USER = loginData.role === "student" 
+  ? `${loginData.grade}학년 ${loginData.classNum}반 ${loginData.number}번`
+  : loginData.name;
+const CLASS = loginData.classNum;
 
-// 로그인 안 했으면 홈으로 이동
-if(!loginUser) {
-  alert("로그인이 필요합니다!");
-  location.href = "index.html";
-}
-
-const ROLE = loginUser.role; // "student" 또는 "teacher"
-const USER = loginUser.code || loginUser.name; // 학생: 학번, 선생님: 이름
-const CLASS = loginUser.classNum; // 학생의 반 번호
-
-/* === 과제 목록 가져오기 === */
 let works = JSON.parse(localStorage.getItem("works")) || [];
 
-/* === 과제 추가 (선생님만 가능) === */
 function addWork() {
-  const title = document.getElementById("title").value.trim();
-  const content = document.getElementById("content").value.trim();
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
   const deadline = document.getElementById("deadline").value;
   const targetClass = document.getElementById("targetClass").value;
   
   if (!title || !content || !deadline) {
-    alert("제목, 내용, 마감일을 모두 입력해주세요!");
+    alert("모든 항목을 입력해주세요.");
     return;
   }
   
-  // 새 과제 추가
   works.push({
     id: Date.now(),
     title: title,
@@ -292,25 +209,19 @@ function addWork() {
   document.getElementById("content").value = "";
   document.getElementById("deadline").value = "";
   
-  alert("과제가 추가되었습니다!");
   render();
 }
 
-/* === 과제 삭제 (선생님만 가능) === */
 function deleteWork(id) {
   if (confirm("정말 이 과제를 삭제하시겠습니까?")) {
     works = works.filter(w => w.id !== id);
     localStorage.setItem("works", JSON.stringify(works));
-    
     // 제출 데이터도 삭제
     localStorage.removeItem("submit_" + id);
-    
-    alert("과제가 삭제되었습니다!");
     render();
   }
 }
 
-/* === 과제 제출 (학생만 가능) === */
 function submit(id) {
   const key = "submit_" + id;
   let list = JSON.parse(localStorage.getItem(key)) || [];
@@ -323,19 +234,17 @@ function submit(id) {
   }
 }
 
-/* === 마감일 상태 확인 === */
 function getDeadlineStatus(deadline) {
   const today = new Date().toISOString().slice(0, 10);
   const deadlineDate = new Date(deadline);
   const todayDate = new Date(today);
   const diffDays = Math.ceil((deadlineDate - todayDate) / (1000 * 60 * 60 * 24));
   
-  if (diffDays < 0) return "passed"; // 마감 지남
-  if (diffDays <= 2) return "soon"; // 마감 임박
-  return "normal"; // 정상
+  if (diffDays < 0) return "passed";
+  if (diffDays <= 2) return "soon";
+  return "normal";
 }
 
-/* === 화면 렌더링 === */
 function render() {
   const workArea = document.getElementById("workArea");
   const teacherBox = document.getElementById("teacherBox");
@@ -343,12 +252,12 @@ function render() {
   workArea.innerHTML = "";
   teacherBox.innerHTML = "";
   
-  // 선생님이면 과제 추가 영역 표시
+  // 선생님 UI
   if (ROLE === "teacher") {
     teacherBox.innerHTML = `
       <h3>📝 과제 추가</h3>
-      <input id="title" type="text" placeholder="과제 제목 (예: 수학 문제집 p.45-50)">
-      <input id="content" type="text" placeholder="과제 내용 및 설명">
+      <input id="title" placeholder="과제 제목 (예: 수학 문제집 p.45-50)">
+      <input id="content" placeholder="과제 내용 및 설명">
       <input id="deadline" type="date">
       <select id="targetClass">
         <option value="1">1반</option>
@@ -363,41 +272,32 @@ function render() {
     `;
   }
   
-  // 내 반 과제만 필터링 (선생님은 모든 과제 표시)
+  // 내 반 과제만 필터링
   const myWorks = ROLE === "teacher" 
     ? works 
     : works.filter(w => w.class === CLASS);
   
-  // 과제가 없을 때 (학생만 메시지 표시)
   if (myWorks.length === 0) {
-    if (ROLE === "student") {
-      workArea.innerHTML = `
-        <div class="empty-state">
-          <div class="emoji">📭</div>
-          <p>등록된 과제가 없습니다.</p>
-          <p style="font-size:14px; color:#bbb;">선생님이 과제를 등록하면 여기에 표시됩니다.</p>
-        </div>
-      `;
-    }
-    // 선생님은 빈 상태 메시지 표시 안 함
+    workArea.innerHTML = `
+      <div class="notice">
+        <p style="text-align: center; color: #999;">등록된 과제가 없습니다.</p>
+      </div>
+    `;
     return;
   }
   
-  // 과제 목록 표시
   myWorks.forEach(w => {
     const key = "submit_" + w.id;
     let list = JSON.parse(localStorage.getItem(key)) || [];
-    const submitted = list.includes(USER); // 내가 제출했는지
+    const submitted = list.includes(USER);
     const today = new Date().toISOString().slice(0, 10);
-    const closed = today > w.deadline; // 마감 지났는지
+    const closed = today > w.deadline;
     const deadlineStatus = getDeadlineStatus(w.deadline);
     
-    // 마감 상태별 클래스
     let statusClass = "";
     if (deadlineStatus === "passed") statusClass = "deadline-passed";
     else if (deadlineStatus === "soon") statusClass = "deadline-soon";
     
-    // 학생용 상태 뱃지
     let badge = "";
     if (ROLE === "student") {
       if (submitted) {
@@ -409,60 +309,35 @@ function render() {
       }
     }
     
-    // 선생님용 반 정보
-    const classInfo = ROLE === "teacher" ? `<p><strong>대상:</strong> ${w.class}반</p>` : "";
+    const classInfo = ROLE === "teacher" ? `<p>대상: ${w.class}반</p>` : "";
     
-    const noticeDiv = document.createElement("div");
-    noticeDiv.className = `notice ${statusClass}`;
-    
-    let html = `
-      <h3>${w.title}${badge}</h3>
-      ${classInfo}
-      <p>${w.content}</p>
-      <p><strong>📅 마감:</strong> ${w.deadline}${closed ? " <span style='color:#ff5252;'>(마감됨)</span>" : ""}</p>
-      <p><strong>📊 제출:</strong> ${list.length}/24명</p>
+    workArea.innerHTML += `
+      <div class="notice ${statusClass}">
+        <h3>${w.title}${badge}</h3>
+        ${classInfo}
+        <p>${w.content}</p>
+        <p>📅 마감: ${w.deadline}${closed ? " (마감됨)" : ""}</p>
+        <p>📊 제출: ${list.length}명</p>
+        ${ROLE === "student" ? `
+          <button onclick="submit(${w.id})"
+            ${submitted || closed ? "disabled" : ""}>
+            ${submitted ? "제출 완료" : closed ? "마감됨" : "제출하기"}
+          </button>
+        ` : `
+          <details>
+            <summary>제출자 명단 보기 (${list.length}명)</summary>
+            <div class="submitter-list">
+              ${list.length > 0 ? list.map(n => `<p>✓ ${n}</p>`).join("") : "<p>아직 제출자가 없습니다.</p>"}
+            </div>
+          </details>
+          <button class="delete-btn" onclick="deleteWork(${w.id})">삭제</button>
+        `}
+      </div>
     `;
-    
-    // 학생이면 제출 버튼
-    if (ROLE === "student") {
-      html += `
-        <button onclick="submit(${w.id})" ${submitted || closed ? "disabled" : ""}>
-          ${submitted ? "✅ 제출 완료" : closed ? "❌ 마감됨" : "📤 제출하기"}
-        </button>
-      `;
-    }
-    
-    // 선생님이면 제출자 명단 + 삭제 버튼
-    if (ROLE === "teacher") {
-      html += `
-        <details>
-          <summary>👥 제출자 명단 보기 (${list.length}명)</summary>
-          <div class="submitter-list">
-      `;
-      
-      if (list.length === 0) {
-        html += `<p style="color:#999;">아직 제출한 학생이 없습니다.</p>`;
-      } else {
-        list.forEach(student => {
-          html += `<p>✓ ${student}</p>`;
-        });
-      }
-      
-      html += `
-          </div>
-        </details>
-        <button class="delete-btn" onclick="deleteWork(${w.id})">🗑️ 삭제</button>
-      `;
-    }
-    
-    noticeDiv.innerHTML = html;
-    workArea.appendChild(noticeDiv);
   });
 }
 
-/* === 초기 렌더링 === */
 render();
 </script>
-
 </body>
 </html>
