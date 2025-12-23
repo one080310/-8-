@@ -259,36 +259,45 @@ function addWork() {
   const content = document.getElementById("content").value.trim();
   const deadline = document.getElementById("deadline").value;
 
-  const checkboxes = document.querySelectorAll(".class-checkbox:checked");
-  const selectedClasses = Array.from(checkboxes).map(cb => Number(cb.value));
+  const gradeChecks = document.querySelectorAll(".grade-checkbox:checked");
+  const classChecks = document.querySelectorAll(".class-checkbox:checked");
+
+  const grades = Array.from(gradeChecks).map(cb => Number(cb.value));
+  const classes = Array.from(classChecks).map(cb => Number(cb.value));
 
   if (!title || !content || !deadline) {
     alert("모든 항목을 입력해주세요.");
     return;
   }
 
-  if (selectedClasses.length === 0) {
-    alert("최소 1개 반을 선택해주세요.");
+  if (grades.length === 0 || classes.length === 0) {
+    alert("학년과 반을 최소 1개 이상 선택해주세요.");
     return;
   }
 
-  selectedClasses.forEach(targetClass => {
-    works.push({
-      id: "work_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
-      title,
-      content,
-      deadline,
-      class: targetClass,
-      createdBy: USER
+  // (학년 × 반) 조합으로 과제 생성
+  grades.forEach(g => {
+    classes.forEach(c => {
+      works.push({
+        id: "work_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
+        title,
+        content,
+        deadline,
+        grade: g,
+        class: c,
+        createdBy: USER
+      });
     });
   });
 
   localStorage.setItem("works", JSON.stringify(works));
 
+  // 입력 초기화
   document.getElementById("title").value = "";
   document.getElementById("content").value = "";
   document.getElementById("deadline").value = "";
-  checkboxes.forEach(cb => cb.checked = false);
+  gradeChecks.forEach(cb => cb.checked = false);
+  classChecks.forEach(cb => cb.checked = false);
 
   render();
 }
@@ -359,28 +368,48 @@ function render() {
   // 교사용 UI
   if (ROLE === "teacher") {
     teacherBox.innerHTML = `
-      <h3>📝 과제 추가</h3>
-      <input id="title" placeholder="과제 제목">
-      <input id="content" placeholder="과제 내용">
-      <input id="deadline" type="date">
-      <label class="class-select-label">대상 반 선택</label>
-      <div class="class-checkboxes">
-        ${[1,2,3,4,5,6,7].map(n => `
-          <div class="class-checkbox-item">
-            <label>
-               <input type="checkbox" class="class-checkbox" value="${n}">
-               ${n}반
-            </label>
-          </div>
-        `).join("")}
+  <h3>📝 과제 추가</h3>
+
+  <input id="title" placeholder="과제 제목">
+  <input id="content" placeholder="과제 내용">
+  <input id="deadline" type="date">
+
+  <!-- 학년 선택 -->
+  <label class="class-select-label">대상 학년 선택</label>
+  <div class="class-checkboxes">
+    ${[1,2,3].map(g => `
+      <div class="class-checkbox-item">
+        <label>
+          <input type="checkbox" class="grade-checkbox" value="${g}">
+          ${g}학년
+        </label>
       </div>
-      <button onclick="addWork()">과제 추가</button>
-    `;
+    `).join("")}
+  </div>
+
+  <!-- 반 선택 -->
+  <label class="class-select-label">대상 반 선택</label>
+  <div class="class-checkboxes">
+    ${[1,2,3,4,5,6,7].map(n => `
+      <div class="class-checkbox-item">
+        <label>
+          <input type="checkbox" class="class-checkbox" value="${n}">
+          ${n}반
+        </label>
+      </div>
+    `).join("")}
+  </div>
+
+  <button onclick="addWork()">과제 추가</button>
+`;
   }
 
   const myWorks = ROLE === "teacher"
     ? works
-    : works.filter(w => w.class === CLASS);
+    : works.filter(w =>
+  w.grade === Number(loginData.grade) &&
+  w.class === Number(loginData.classNum)
+);
 
   if (myWorks.length === 0) {
     workArea.innerHTML = `
