@@ -2,81 +2,194 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>자습 체크 & 반별 참석률 (날짜 기반)</title>
+<title>자습 체크 & 반별 참석률 (학년별)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
-  background:#f5f7fb;
-  padding:20px;
+  background: #f5f7fb;
+  padding: 20px;
 }
-h2 { margin-bottom:10px; }
+
+h2 { 
+  margin-bottom: 10px;
+  color: #333;
+}
+
 a {
-  text-decoration:none;
-  font-weight:600;
-  color:#4a5bdc;
-  display:inline-block;
-  margin-bottom:15px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #4a5bdc;
+  display: inline-block;
+  margin-bottom: 15px;
 }
+
+/* 학년 선택 버튼 */
+.grade-buttons {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+}
+
+.grade-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  background: #e0e4ff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.grade-buttons button:hover {
+  background: #c5ccff;
+  transform: scale(1.05);
+}
+
+.grade-buttons button.active {
+  background: #4a5bdc;
+  color: white;
+}
+
+/* 반 선택 버튼 */
+.class-buttons {
+  margin: 15px 0;
+}
+
 .class-buttons button {
-  margin:4px;
-  padding:8px 16px;
-  border:none;
-  border-radius:20px;
-  background:#e0e4ff;
-  cursor:pointer;
-  font-weight:600;
+  margin: 4px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  background: #e0e4ff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
 }
+
+.class-buttons button:hover {
+  background: #c5ccff;
+}
+
 .class-buttons button.active {
-  background:#4a5bdc;
-  color:white;
+  background: #4a5bdc;
+  color: white;
 }
+
+/* 날짜 선택 */
+.date-selector {
+  margin: 15px 0;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.date-selector input[type="date"] {
+  padding: 8px 12px;
+  border: 2px solid #e0e4ff;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 0 10px;
+}
+
+.date-selector input:focus {
+  outline: none;
+  border-color: #4a5bdc;
+}
+
+#weekInfo {
+  margin-left: 15px;
+  font-weight: 600;
+  color: #4a5bdc;
+  font-size: 16px;
+}
+
+/* 테이블 */
 table {
-  width:100%;
-  border-collapse:collapse;
-  background:white;
-  margin-top:15px;
-  border-radius:10px;
-  overflow:hidden;
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  margin-top: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
+
 th, td {
-  border:1px solid #e0e4ff;
-  padding:8px;
-  text-align:center;
+  border: 1px solid #e0e4ff;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
 }
+
 thead {
-  background:#4a5bdc;
-  color:white;
+  background: #4a5bdc;
+  color: white;
 }
+
+tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+tbody tr:hover {
+  background: #e8ecff;
+}
+
 td:first-child {
-  font-weight:600;
-  color:#4a5bdc;
-  background:#f0f2ff;
+  font-weight: 600;
+  color: #4a5bdc;
+  background: #f0f2ff;
 }
+
 input[type="checkbox"] {
-  width:18px;
-  height:18px;
-  accent-color:#4a5bdc;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4a5bdc;
 }
-hr { margin:40px 0; }
+
+hr { 
+  margin: 40px 0;
+  border: none;
+  border-top: 2px solid #e0e4ff;
+}
+
+/* 차트 영역 */
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+h3 {
+  color: #333;
+  margin-bottom: 15px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>📘 자습 체크리스트 (날짜 기준 주차)</h2>
+<h2>📘 자습 체크리스트 (학년별 · 날짜 기준)</h2>
 <a href="index.html">← 홈으로</a>
+
+<!-- 학년 선택 -->
+<div class="grade-buttons" id="gradeButtons"></div>
 
 <!-- 반 선택 -->
 <div class="class-buttons" id="classButtons"></div>
 
 <!-- 날짜 선택 -->
-<div style="margin:15px 0;">
-  <strong>날짜 선택:</strong>
+<div class="date-selector">
+  <strong>📅 날짜 선택:</strong>
   <input type="date" id="datePicker" onchange="render()">
-  <span id="weekInfo" style="margin-left:15px;font-weight:600;"></span>
+  <span id="weekInfo"></span>
 </div>
 
 <table>
@@ -98,122 +211,203 @@ hr { margin:40px 0; }
 
 <hr>
 
-<h3>📊 반별 자습 참석률 비교 (선택 주차)</h3>
-<canvas id="classChart" height="120"></canvas>
+<div class="chart-container">
+  <h3>📊 <span id="chartTitle">1학년</span> 반별 자습 참석률 비교</h3>
+  <canvas id="classChart" height="120"></canvas>
+</div>
 
 <script>
-let currentClass="1반";
+/* === 전역 변수 === */
+let currentGrade = 1; // 현재 선택된 학년 (1, 2, 3)
+let currentClass = 1; // 현재 선택된 반 (1~7)
 let chart;
 
-const tableBody=document.getElementById("tableBody");
-const weekInfo=document.getElementById("weekInfo");
+const tableBody = document.getElementById("tableBody");
+const weekInfo = document.getElementById("weekInfo");
+const chartTitle = document.getElementById("chartTitle");
 
-/* 오늘 날짜 기본 */
-document.getElementById("datePicker").value =
+/* === 오늘 날짜 기본값 설정 === */
+document.getElementById("datePicker").value = 
   new Date().toISOString().split("T")[0];
 
-/* 반 버튼 */
-const classButtons=document.getElementById("classButtons");
-for(let i=1;i<=7;i++){
-  const b=document.createElement("button");
-  b.textContent=i+"반";
-  if(i===1) b.classList.add("active");
-  b.onclick=()=>{
-    currentClass=i+"반";
-    document.querySelectorAll(".class-buttons button")
-      .forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
+/* === 학년 버튼 생성 (1, 2, 3학년) === */
+const gradeButtons = document.getElementById("gradeButtons");
+for(let g = 1; g <= 3; g++) {
+  const btn = document.createElement("button");
+  btn.textContent = g + "학년";
+  if(g === 1) btn.classList.add("active"); // 1학년 기본 선택
+  btn.onclick = () => {
+    currentGrade = g;
+    currentClass = 1; // 반 초기화
+    
+    // 모든 학년 버튼 비활성화
+    document.querySelectorAll(".grade-buttons button")
+      .forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    
+    // 반 버튼 업데이트
+    updateClassButtons();
     render();
   };
-  classButtons.appendChild(b);
+  gradeButtons.appendChild(btn);
 }
 
-/* 날짜 → 주차 계산 */
-function getWeekKey(){
-  const date=new Date(document.getElementById("datePicker").value);
-  const year=date.getFullYear();
-  const month=date.getMonth();
-  const first=new Date(year,month,1);
-  const week=Math.ceil((date.getDate()+first.getDay())/7);
-  weekInfo.textContent=
-    `${year}년 ${month+1}월 ${week}주차`;
-  return `${year}-${month+1}-week${week}`;
-}
-
-/* 데이터 */
-function getData(cls=currentClass){
-  const key=`study_${cls}_${getWeekKey()}`;
-  let data=JSON.parse(localStorage.getItem(key));
-  if(!data){
-    data=[];
-    for(let i=1;i<=24;i++){
-      data.push({number:i,checks:Array(15).fill(false)});
-    }
-    localStorage.setItem(key,JSON.stringify(data));
+/* === 반 버튼 생성 함수 (1~7반) === */
+function updateClassButtons() {
+  const classButtons = document.getElementById("classButtons");
+  classButtons.innerHTML = ""; // 기존 버튼 제거
+  
+  for(let i = 1; i <= 7; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i + "반";
+    if(i === currentClass) btn.classList.add("active"); // 현재 반 활성화
+    
+    btn.onclick = () => {
+      currentClass = i;
+      document.querySelectorAll(".class-buttons button")
+        .forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      render();
+    };
+    
+    classButtons.appendChild(btn);
   }
+}
+
+/* === 날짜 → 주차 계산 === */
+function getWeekKey() {
+  const date = new Date(document.getElementById("datePicker").value);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const first = new Date(year, month, 1);
+  const week = Math.ceil((date.getDate() + first.getDay()) / 7);
+  
+  weekInfo.textContent = `${year}년 ${month + 1}월 ${week}주차`;
+  return `${year}-${month + 1}-week${week}`;
+}
+
+/* === 데이터 가져오기 === */
+function getData(grade = currentGrade, classNum = currentClass) {
+  const key = `study_${grade}학년_${classNum}반_${getWeekKey()}`;
+  let data = JSON.parse(localStorage.getItem(key));
+  
+  if(!data) {
+    data = [];
+    for(let i = 1; i <= 24; i++) {
+      data.push({
+        number: i,
+        checks: Array(15).fill(false)
+      });
+    }
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+  
   return data;
 }
 
-/* 체크 */
-function toggleCheck(s,c){
-  const key=`study_${currentClass}_${getWeekKey()}`;
-  const data=getData();
-  data[s].checks[c]=!data[s].checks[c];
-  localStorage.setItem(key,JSON.stringify(data));
+/* === 체크박스 토글 === */
+function toggleCheck(s, c) {
+  const key = `study_${currentGrade}학년_${currentClass}반_${getWeekKey()}`;
+  const data = getData();
+  data[s].checks[c] = !data[s].checks[c];
+  localStorage.setItem(key, JSON.stringify(data));
   render();
 }
 
-/* 렌더 */
-function render(){
-  const data=getData();
-  tableBody.innerHTML="";
-  data.forEach((stu,s)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${stu.number}</td>`;
-    stu.checks.forEach((ck,c)=>{
-      const td=document.createElement("td");
-      const cb=document.createElement("input");
-      cb.type="checkbox";
-      cb.checked=ck;
-      cb.onclick=()=>toggleCheck(s,c);
+/* === 테이블 렌더링 === */
+function render() {
+  const data = getData();
+  tableBody.innerHTML = "";
+  
+  data.forEach((stu, s) => {
+    const tr = document.createElement("tr");
+    
+    // 번호 셀
+    const numberCell = document.createElement("td");
+    numberCell.textContent = stu.number;
+    tr.appendChild(numberCell);
+    
+    // 15개 체크박스
+    for(let c = 0; c < 15; c++) {
+      const td = document.createElement("td");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = stu.checks[c];
+      
+      // 클로저로 인덱스 캡처
+      cb.onclick = (function(studentIndex, checkIndex) {
+        return function() {
+          toggleCheck(studentIndex, checkIndex);
+        };
+      })(s, c);
+      
       td.appendChild(cb);
       tr.appendChild(td);
-    });
+    }
+    
     tableBody.appendChild(tr);
   });
+  
   drawChart();
 }
 
-/* 반 참석률 */
-function classRate(cls){
-  const d=getData(cls);
-  let t=24*15,c=0;
-  d.forEach(s=>s.checks.forEach(x=>{if(x)c++;}));
-  return Math.round((c/t)*100);
+/* === 반별 참석률 계산 === */
+function classRate(grade, classNum) {
+  const d = getData(grade, classNum);
+  let total = 24 * 15; // 24명 × 15교시
+  let checked = 0;
+  
+  d.forEach(s => {
+    s.checks.forEach(x => {
+      if(x) checked++;
+    });
+  });
+  
+  return Math.round((checked / total) * 100);
 }
 
-/* 그래프 */
-function drawChart(){
-  const labels=[],values=[];
-  for(let i=1;i<=7;i++){
-    labels.push(i+"반");
-    values.push(classRate(i+"반"));
+/* === 차트 그리기 === */
+function drawChart() {
+  const labels = [];
+  const values = [];
+  
+  // 현재 학년의 1~7반 데이터
+  for(let i = 1; i <= 7; i++) {
+    labels.push(i + "반");
+    values.push(classRate(currentGrade, i));
   }
+  
+  // 차트 제목 업데이트
+  chartTitle.textContent = `${currentGrade}학년`;
+  
+  // 기존 차트 제거
   if(chart) chart.destroy();
-  chart=new Chart(document.getElementById("classChart"),{
-    type:"bar",
-    data:{
-      labels,
-      datasets:[{
-        label:weekInfo.textContent+" 참석률 (%)",
-        data:values,
-        backgroundColor:"#4a5bdc"
+  
+  // 새 차트 생성
+  chart = new Chart(document.getElementById("classChart"), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: weekInfo.textContent + " 참석률 (%)",
+        data: values,
+        backgroundColor: "#4a5bdc"
       }]
     },
-    options:{scales:{y:{beginAtZero:true,max:100}}}
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
+    }
   });
 }
 
+/* === 초기 렌더링 === */
+updateClassButtons();
 render();
 </script>
 
